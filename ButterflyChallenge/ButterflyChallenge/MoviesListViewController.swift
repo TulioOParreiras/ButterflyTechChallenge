@@ -43,6 +43,8 @@ final class MoviesListViewController: UITableViewController {
     @objc func refresh() {
         guard let url = URL(string: "https://any-url.com") else { return }
         refreshControl?.beginRefreshing()
-        moviesLoader.loadMoviesData(from: url, completion: { _ in })
+        moviesLoader.loadMoviesData(from: url) { _ in
+            self.refreshControl?.endRefreshing()
+        }
     }
 }

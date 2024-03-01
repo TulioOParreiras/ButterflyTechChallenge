@@ -10,10 +10,15 @@ import XCTest
 @testable import ButterflyChallenge
 
 class LoaderSpy: MoviesDataLoader {
-    var loadCallCount = 0
+    var moviesListRequests = [(url: URL, completion: (LoadResult) -> Void)]()
+    var loadCallCount: Int { moviesListRequests.count }
     
     func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) {
-        loadCallCount += 1
+        moviesListRequests.append((url, completion))
+    }
+    
+    func completeMoviesListLoading(at index: Int = 0) {
+        moviesListRequests[index].completion(.success(Data()))
     }
 }
 
@@ -40,7 +45,10 @@ final class MoviesListIntegrationTests: XCTestCase {
         let sut = MoviesListViewController(moviesLoader: loader)
 
         sut.simulateAppearence()
-        XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to be loading \(sut.isShowingLoadingIndicator)")
+        XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to show loading when view is loaded")
+        
+        loader.completeMoviesListLoading()
+        XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading when movies list has completed loading")
     }
     
 }
