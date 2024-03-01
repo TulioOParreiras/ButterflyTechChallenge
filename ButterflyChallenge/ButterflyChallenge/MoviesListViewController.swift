@@ -8,9 +8,9 @@
 import UIKit
 
 protocol MoviesDataLoader {
-    typealias Result = Swift.Result<Data, Error>
+    typealias LoadResult = Swift.Result<Data, Error>
     
-    func loadMoviesData(from url: URL, completion: @escaping (Result) -> Void)
+    func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void)
 }
 
 final class MoviesListViewController: UITableViewController {
@@ -28,6 +28,10 @@ final class MoviesListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureRefreshControl()
+    }
+    
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
         refresh()
     }
     
@@ -38,6 +42,7 @@ final class MoviesListViewController: UITableViewController {
     
     @objc func refresh() {
         guard let url = URL(string: "https://any-url.com") else { return }
+        refreshControl?.beginRefreshing()
         moviesLoader.loadMoviesData(from: url, completion: { _ in })
     }
 }

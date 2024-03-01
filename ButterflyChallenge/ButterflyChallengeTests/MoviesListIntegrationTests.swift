@@ -12,7 +12,7 @@ import XCTest
 class LoaderSpy: MoviesDataLoader {
     var loadCallCount = 0
     
-    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.Result) -> Void) {
+    func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) {
         loadCallCount += 1
     }
 }
@@ -25,6 +25,7 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertEqual(loader.loadCallCount, 0)
         
         sut.loadViewIfNeeded()
+        sut.viewIsAppearing(false)
         XCTAssertEqual(loader.loadCallCount, 1)
         
         sut.simulateUserInitiatedMoviesListReload()
@@ -32,6 +33,14 @@ final class MoviesListIntegrationTests: XCTestCase {
         
         sut.simulateUserInitiatedMoviesListReload()
         XCTAssertEqual(loader.loadCallCount, 3)
+    }
+    
+    func test_loadingMoviesIndicator_isVisibleWhileLoadingMoviesList() {
+        let loader = LoaderSpy()
+        let sut = MoviesListViewController(moviesLoader: loader)
+
+        sut.simulateAppearence()
+        XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to be loading \(sut.isShowingLoadingIndicator)")
     }
     
 }
