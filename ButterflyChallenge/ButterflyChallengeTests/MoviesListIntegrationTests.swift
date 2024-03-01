@@ -51,10 +51,22 @@ final class MoviesListIntegrationTests: XCTestCase {
     
     // MARK: - Helpers
     
-    func makeSUT() -> (sut: MoviesListViewController, loader: LoaderSpy) {
+    func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
         let loader = LoaderSpy()
         let sut = MoviesListViewController(moviesLoader: loader)
+        trackForMemoryLeaks(loader, file: file, line: line)
+        trackForMemoryLeaks(sut, file: file, line: line)
         return (sut, loader)
+    }
+    
+}
+
+extension XCTestCase {
+    
+    func trackForMemoryLeaks(_ object: AnyObject, file: StaticString = #file, line: UInt = #line) {
+        addTeardownBlock { [weak object] in
+            XCTAssertNil(object, "\(String(describing: object)) was expected to be removed from memory, possible retain cycle", file: file, line: line)
+        }
     }
     
 }
