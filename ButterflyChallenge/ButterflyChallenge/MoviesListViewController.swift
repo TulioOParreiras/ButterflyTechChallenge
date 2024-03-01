@@ -15,6 +15,7 @@ protocol MoviesDataLoader {
 
 final class MoviesListViewController: UITableViewController {
     let moviesLoader: MoviesDataLoader
+    lazy var searchBar = UISearchBar()
     
     init(moviesLoader: MoviesDataLoader) {
         self.moviesLoader = moviesLoader
@@ -28,16 +29,23 @@ final class MoviesListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureRefreshControl()
-    }
-    
-    override func viewIsAppearing(_ animated: Bool) {
-        super.viewIsAppearing(animated)
-        refresh()
+        configureSearchBar()
     }
     
     private func configureRefreshControl() {
         refreshControl = UIRefreshControl()
         refreshControl?.addTarget(self, action: #selector(refresh), for: .valueChanged)
+    }
+    
+    private func configureSearchBar() {
+        searchBar.searchBarStyle = UISearchBar.Style.default
+        searchBar.placeholder = "Type to search a movie"
+        searchBar.sizeToFit()
+        searchBar.isTranslucent = false
+        searchBar.backgroundImage = UIImage()
+        searchBar.delegate = self
+        navigationItem.titleView = searchBar
+        view.addSubview(searchBar)
     }
     
     @objc func refresh() {
@@ -46,5 +54,11 @@ final class MoviesListViewController: UITableViewController {
         moviesLoader.loadMoviesData(from: url) { [weak self] _ in
             self?.refreshControl?.endRefreshing()
         }
+    }
+}
+
+extension MoviesListViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        refresh()
     }
 }

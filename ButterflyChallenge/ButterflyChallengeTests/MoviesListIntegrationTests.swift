@@ -28,22 +28,27 @@ final class MoviesListIntegrationTests: XCTestCase {
         let (sut, loader) = makeSUT()
         XCTAssertEqual(loader.loadCallCount, 0)
         
-        sut.loadViewIfNeeded()
-        sut.viewIsAppearing(false)
-        XCTAssertEqual(loader.loadCallCount, 1)
+        sut.simulateAppearence()
+        XCTAssertEqual(loader.loadCallCount, 0, "Expected to not load movies list on view load")
+        
+        sut.simulateSearchForText("A movie")
+        XCTAssertEqual(loader.loadCallCount, 1, "Expected to load movies list on search")
         
         sut.simulateUserInitiatedMoviesListReload()
-        XCTAssertEqual(loader.loadCallCount, 2)
+        XCTAssertEqual(loader.loadCallCount, 2, "Expected to refresh movies list on pull down to refresh")
         
         sut.simulateUserInitiatedMoviesListReload()
-        XCTAssertEqual(loader.loadCallCount, 3)
+        XCTAssertEqual(loader.loadCallCount, 3, "Expected another refresh request on another pull down to refresh")
     }
     
     func test_loadingMoviesIndicator_isVisibleWhileLoadingMoviesList() {
         let (sut, loader) = makeSUT()
-
+        
         sut.simulateAppearence()
-        XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to show loading when view is loaded")
+        XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to not show loading when view is loaded")
+        
+        sut.simulateSearchForText("A movie")
+        XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to show loading when searching for a movie")
         
         loader.completeMoviesListLoading()
         XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading when movies list has completed loading")
@@ -57,16 +62,6 @@ final class MoviesListIntegrationTests: XCTestCase {
         trackForMemoryLeaks(loader, file: file, line: line)
         trackForMemoryLeaks(sut, file: file, line: line)
         return (sut, loader)
-    }
-    
-}
-
-extension XCTestCase {
-    
-    func trackForMemoryLeaks(_ object: AnyObject, file: StaticString = #file, line: UInt = #line) {
-        addTeardownBlock { [weak object] in
-            XCTAssertNil(object, "\(String(describing: object)) was expected to be removed from memory, possible retain cycle", file: file, line: line)
-        }
     }
     
 }

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import XCTest
 
 @testable import ButterflyChallenge
 
@@ -37,6 +38,11 @@ extension MoviesListViewController {
     
     var isShowingLoadingIndicator: Bool {
         refreshControl!.isRefreshing == true
+    }
+    
+    func simulateSearchForText(_ text: String) {
+        searchBar.searchTextField.text = text
+        searchBar.searchTextField.simulate(event: .editingChanged)
     }
     
     func simulateAppearence() {
@@ -83,3 +89,14 @@ extension UIView {
         RunLoop.current.run(until: Date())
     }
 }
+
+extension XCTestCase {
+    
+    func trackForMemoryLeaks(_ object: AnyObject, file: StaticString = #file, line: UInt = #line) {
+        addTeardownBlock { [weak object] in
+            XCTAssertNil(object, "\(String(describing: object)) was expected to be removed from memory, possible retain cycle", file: file, line: line)
+        }
+    }
+    
+}
+
