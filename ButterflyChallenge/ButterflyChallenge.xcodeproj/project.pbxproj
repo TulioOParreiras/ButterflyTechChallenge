@@ -9,11 +9,12 @@
 /* Begin PBXBuildFile section */
 		D2212E432B916839002F9A96 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E422B916839002F9A96 /* AppDelegate.swift */; };
 		D2212E452B916839002F9A96 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E442B916839002F9A96 /* SceneDelegate.swift */; };
-		D2212E472B916839002F9A96 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E462B916839002F9A96 /* ViewController.swift */; };
+		D2212E472B916839002F9A96 /* MoviesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E462B916839002F9A96 /* MoviesListViewController.swift */; };
 		D2212E4C2B91683A002F9A96 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D2212E4B2B91683A002F9A96 /* Assets.xcassets */; };
 		D2212E4F2B91683A002F9A96 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2212E4D2B91683A002F9A96 /* LaunchScreen.storyboard */; };
 		D2212E5A2B91683A002F9A96 /* MoviesListIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E592B91683A002F9A96 /* MoviesListIntegrationTests.swift */; };
 		D2212E642B91683A002F9A96 /* ButterflyChallengeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E632B91683A002F9A96 /* ButterflyChallengeUITests.swift */; };
+		D2212E742B916DBA002F9A96 /* MoviesListTests+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E732B916DBA002F9A96 /* MoviesListTests+Helpers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,7 +38,7 @@
 		D2212E3F2B916839002F9A96 /* ButterflyChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ButterflyChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2212E422B916839002F9A96 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D2212E442B916839002F9A96 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		D2212E462B916839002F9A96 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		D2212E462B916839002F9A96 /* MoviesListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesListViewController.swift; sourceTree = "<group>"; };
 		D2212E4B2B91683A002F9A96 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D2212E4E2B91683A002F9A96 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D2212E502B91683A002F9A96 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -45,6 +46,7 @@
 		D2212E592B91683A002F9A96 /* MoviesListIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesListIntegrationTests.swift; sourceTree = "<group>"; };
 		D2212E5F2B91683A002F9A96 /* ButterflyChallengeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ButterflyChallengeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2212E632B91683A002F9A96 /* ButterflyChallengeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButterflyChallengeUITests.swift; sourceTree = "<group>"; };
+		D2212E732B916DBA002F9A96 /* MoviesListTests+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MoviesListTests+Helpers.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +99,7 @@
 			children = (
 				D2212E422B916839002F9A96 /* AppDelegate.swift */,
 				D2212E442B916839002F9A96 /* SceneDelegate.swift */,
-				D2212E462B916839002F9A96 /* ViewController.swift */,
+				D2212E462B916839002F9A96 /* MoviesListViewController.swift */,
 				D2212E4B2B91683A002F9A96 /* Assets.xcassets */,
 				D2212E4D2B91683A002F9A96 /* LaunchScreen.storyboard */,
 				D2212E502B91683A002F9A96 /* Info.plist */,
@@ -109,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				D2212E592B91683A002F9A96 /* MoviesListIntegrationTests.swift */,
+				D2212E732B916DBA002F9A96 /* MoviesListTests+Helpers.swift */,
 			);
 			path = ButterflyChallengeTests;
 			sourceTree = "<group>";
@@ -251,7 +254,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2212E472B916839002F9A96 /* ViewController.swift in Sources */,
+				D2212E472B916839002F9A96 /* MoviesListViewController.swift in Sources */,
 				D2212E432B916839002F9A96 /* AppDelegate.swift in Sources */,
 				D2212E452B916839002F9A96 /* SceneDelegate.swift in Sources */,
 			);
@@ -261,6 +264,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2212E742B916DBA002F9A96 /* MoviesListTests+Helpers.swift in Sources */,
 				D2212E5A2B91683A002F9A96 /* MoviesListIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
