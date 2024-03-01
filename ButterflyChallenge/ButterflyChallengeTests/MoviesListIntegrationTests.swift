@@ -14,7 +14,7 @@ protocol MoviesDataLoader {
     func loadMoviesData(from url: URL, completion: @escaping (Result) -> Void)
 }
 
-final class MoviesListViewController: UIViewController { 
+final class MoviesListViewController: UITableViewController {
     let moviesLoader: MoviesDataLoader
     
     init(moviesLoader: MoviesDataLoader) {
@@ -28,7 +28,16 @@ final class MoviesListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        configureRefreshControl()
+        refresh()
+    }
+    
+    private func configureRefreshControl() {
+        refreshControl = UIRefreshControl()
+        refreshControl?.addTarget(self, action: #selector(refresh), for: .valueChanged)
+    }
+    
+    @objc func refresh() {
         guard let url = URL(string: "https://any-url.com") else { return }
         moviesLoader.loadMoviesData(from: url, completion: { _ in })
     }
@@ -51,6 +60,34 @@ final class MoviesListIntegrationTests: XCTestCase {
         
         sut.loadViewIfNeeded()
         XCTAssertEqual(loader.loadCallCount, 1)
+        
+        sut.simulateUserInitiatedMoviesListReload()
+        XCTAssertEqual(loader.loadCallCount, 2)
+        
+        sut.simulateUserInitiatedMoviesListReload()
+        XCTAssertEqual(loader.loadCallCount, 3)
     }
     
+}
+
+extension MoviesListViewController {
+    func simulateUserInitiatedMoviesListReload() {
+        refreshControl?.simulatePullToRefresh()
+    }
+}
+
+extension UIRefreshControl {
+    func simulatePullToRefresh() {
+        simulate(event: .valueChanged)
+    }
+}
+
+extension UIControl {
+    func simulate(event: UIControl.Event) {
+        allTargets.forEach { target in
+            actions(forTarget: target, forControlEvent: event)?.forEach {
+                (target as NSObject).perform(Selector($0))
+            }
+        }
+    }
 }
