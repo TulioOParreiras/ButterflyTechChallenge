@@ -25,8 +25,7 @@ class LoaderSpy: MoviesDataLoader {
 final class MoviesListIntegrationTests: XCTestCase { 
     
     func test_loadMoviesActions_requestLoadMovies() {
-        let loader = LoaderSpy()
-        let sut = MoviesListViewController(moviesLoader: loader)
+        let (sut, loader) = makeSUT()
         XCTAssertEqual(loader.loadCallCount, 0)
         
         sut.loadViewIfNeeded()
@@ -41,14 +40,21 @@ final class MoviesListIntegrationTests: XCTestCase {
     }
     
     func test_loadingMoviesIndicator_isVisibleWhileLoadingMoviesList() {
-        let loader = LoaderSpy()
-        let sut = MoviesListViewController(moviesLoader: loader)
+        let (sut, loader) = makeSUT()
 
         sut.simulateAppearence()
         XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to show loading when view is loaded")
         
         loader.completeMoviesListLoading()
         XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading when movies list has completed loading")
+    }
+    
+    // MARK: - Helpers
+    
+    func makeSUT() -> (sut: MoviesListViewController, loader: LoaderSpy) {
+        let loader = LoaderSpy()
+        let sut = MoviesListViewController(moviesLoader: loader)
+        return (sut, loader)
     }
     
 }
