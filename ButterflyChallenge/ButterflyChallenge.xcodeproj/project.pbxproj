@@ -12,7 +12,7 @@
 		D2212E472B916839002F9A96 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E462B916839002F9A96 /* ViewController.swift */; };
 		D2212E4C2B91683A002F9A96 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D2212E4B2B91683A002F9A96 /* Assets.xcassets */; };
 		D2212E4F2B91683A002F9A96 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2212E4D2B91683A002F9A96 /* LaunchScreen.storyboard */; };
-		D2212E5A2B91683A002F9A96 /* ButterflyChallengeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E592B91683A002F9A96 /* ButterflyChallengeTests.swift */; };
+		D2212E5A2B91683A002F9A96 /* MoviesListIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E592B91683A002F9A96 /* MoviesListIntegrationTests.swift */; };
 		D2212E642B91683A002F9A96 /* ButterflyChallengeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E632B91683A002F9A96 /* ButterflyChallengeUITests.swift */; };
 /* End PBXBuildFile section */
 
@@ -42,7 +42,7 @@
 		D2212E4E2B91683A002F9A96 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D2212E502B91683A002F9A96 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D2212E552B91683A002F9A96 /* ButterflyChallengeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ButterflyChallengeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D2212E592B91683A002F9A96 /* ButterflyChallengeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButterflyChallengeTests.swift; sourceTree = "<group>"; };
+		D2212E592B91683A002F9A96 /* MoviesListIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesListIntegrationTests.swift; sourceTree = "<group>"; };
 		D2212E5F2B91683A002F9A96 /* ButterflyChallengeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ButterflyChallengeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2212E632B91683A002F9A96 /* ButterflyChallengeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButterflyChallengeUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -108,7 +108,7 @@
 		D2212E582B91683A002F9A96 /* ButterflyChallengeTests */ = {
 			isa = PBXGroup;
 			children = (
-				D2212E592B91683A002F9A96 /* ButterflyChallengeTests.swift */,
+				D2212E592B91683A002F9A96 /* MoviesListIntegrationTests.swift */,
 			);
 			path = ButterflyChallengeTests;
 			sourceTree = "<group>";
@@ -261,7 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2212E5A2B91683A002F9A96 /* ButterflyChallengeTests.swift in Sources */,
+				D2212E5A2B91683A002F9A96 /* MoviesListIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
