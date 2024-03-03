@@ -30,6 +30,11 @@ private class FakeRefreshControl: UIRefreshControl {
     }
 }
 
+extension MovieViewCell {
+    var titleText: String? { titleLabel.text }
+    var releaseDateText: String? { releaseDateLabel.text }
+    var renderedPosterImage: Data? { posterImageView.image?.pngData() }
+}
 
 extension MoviesListViewController {
     func simulateUserInitiatedMoviesListReload() {
@@ -65,6 +70,24 @@ extension MoviesListViewController {
         
         refreshControl = fakeRefreshControl
     }
+    
+    func numberOfRenderedMovies() -> Int {
+        return tableView.numberOfRows(inSection: movisListSection)
+    }
+    
+    func movieView(at row: Int) -> UITableViewCell? {
+        guard numberOfRenderedMovies() > row else {
+            return nil
+        }
+        let ds = tableView.dataSource
+        let index = IndexPath(row: row, section: movisListSection)
+        return ds?.tableView(tableView, cellForRowAt: index)
+    }
+    
+    private var movisListSection: Int {
+        return 0
+    }
+    
 }
 
 extension UIRefreshControl {

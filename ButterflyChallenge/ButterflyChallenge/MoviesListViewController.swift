@@ -8,14 +8,29 @@
 import UIKit
 
 protocol MoviesDataLoader {
-    typealias LoadResult = Swift.Result<Data, Error>
+    typealias LoadResult = Swift.Result<[Movie], Error>
     
     func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void)
+}
+
+struct Movie {
+    let id: String
+    let title: String
+    let posterImageURL: URL
+    let releaseDate: String
+}
+
+final class MovieViewCell: UITableViewCell {
+    let titleLabel = UILabel()
+    let releaseDateLabel = UILabel()
+    let posterImageView = UIImageView()
 }
 
 final class MoviesListViewController: UITableViewController {
     let moviesLoader: MoviesDataLoader
     lazy var searchBar = UISearchBar()
+    
+    var moviesList = [Movie]()
     
     init(moviesLoader: MoviesDataLoader) {
         self.moviesLoader = moviesLoader
@@ -28,6 +43,7 @@ final class MoviesListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.register(MovieViewCell.self, forCellReuseIdentifier: String(describing: MovieViewCell.self))
         configureRefreshControl()
         configureSearchBar()
     }
@@ -51,14 +67,35 @@ final class MoviesListViewController: UITableViewController {
     @objc func refresh() {
         guard let url = URL(string: "https://any-url.com") else { return }
         refreshControl?.beginRefreshing()
-        moviesLoader.loadMoviesData(from: url) { [weak self] _ in
+        moviesLoader.loadMoviesData(from: url) { [weak self] result in
+            self?.moviesList = (try? result.get()) ?? []
             self?.refreshControl?.endRefreshing()
+            self?.tableView.reloadData()
         }
     }
 }
+
+// MARK: - UISearchBarDelegate
 
 extension MoviesListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         refresh()
     }
+}
+
+// MARK: - UITableViewDataSource
+
+extension MoviesListViewController {
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        moviesList.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: MovieViewCell.self), for: indexPath) as! MovieViewCell
+        cell.titleLabel.text = moviesList[indexPath.row].title
+        cell.releaseDateLabel.text = moviesList[indexPath.row].releaseDate
+        return cell
+    }
+    
 }

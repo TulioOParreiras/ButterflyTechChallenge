@@ -17,8 +17,8 @@ class LoaderSpy: MoviesDataLoader {
         moviesListRequests.append((url, completion))
     }
     
-    func completeMoviesListLoading(at index: Int = 0) {
-        moviesListRequests[index].completion(.success(Data()))
+    func completeMoviesListLoading(with movies: [Movie] = [], at index: Int = 0) {
+        moviesListRequests[index].completion(.success(movies))
     }
 }
 
@@ -54,6 +54,44 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading when movies list has completed loading")
     }
     
+    func test_loadMoviesCompletion_rendersSuccessfullyLoadedMovies() {
+        let movie0 = makeMovie(title: "A movie", releaseDate: "A release date")
+        let movie1 = makeMovie(title: "Another movie", releaseDate: "Another release date")
+        let movie2 = makeMovie(title: "A new movie", releaseDate: "A new release date")
+        let (sut, loader) = makeSUT()
+        
+        sut.simulateAppearence()
+        assertThat(sut, isRendering: [])
+        
+        sut.simulateSearchForText("A movie")
+        assertThat(sut, isRendering: [])
+        
+        loader.completeMoviesListLoading(with: [movie0], at: 0)
+        assertThat(sut, isRendering: [movie0])
+        
+        sut.simulateSearchForText("another movie")
+        
+        loader.completeMoviesListLoading(with: [movie0, movie1, movie2], at: 1)
+        assertThat(sut, isRendering: [movie0, movie1, movie2])
+    }
+    
+    func test_loadMoviesCompletion_rendersSuccessfullyLoadedEmptyMoviesAfterNonEmptyMovies() {
+        let movie0 = makeMovie()
+        let movie1 = makeMovie()
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        assertThat(sut, isRendering: [])
+
+        sut.simulateSearchForText("A movie")
+        loader.completeMoviesListLoading(with: [movie0, movie1], at: 0)
+        assertThat(sut, isRendering: [movie0, movie1])
+
+        sut.simulateSearchForText("Another movie")
+        loader.completeMoviesListLoading(with: [], at: 1)
+        assertThat(sut, isRendering: [])
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
@@ -62,6 +100,43 @@ final class MoviesListIntegrationTests: XCTestCase {
         trackForMemoryLeaks(loader, file: file, line: line)
         trackForMemoryLeaks(sut, file: file, line: line)
         return (sut, loader)
+    }
+    
+    private func assertThat(
+        _ sut: MoviesListViewController,
+        isRendering moviesList: [Movie],
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        sut.view.enforceLayoutCycle()
+        
+        guard sut.numberOfRenderedMovies() == moviesList.count else {
+            return XCTFail("Expected \(moviesList.count) movies, got \(sut.numberOfRenderedMovies()) instead.", file: file, line: line)
+        }
+        
+        moviesList.enumerated().forEach { index, movie in
+            assertThat(sut, hasViewConfiguredFor: movie, at: index, file: file, line: line)
+        }
+    }
+    
+    func assertThat(_ sut: MoviesListViewController, hasViewConfiguredFor movie: Movie, at index: Int, file: StaticString = #file, line: UInt = #line) {
+        let view = sut.movieView(at: index)
+        
+        guard let cell = view as? MovieViewCell else {
+            return XCTFail("Expected \(MovieViewCell.self) instance, got \(String(describing: view)) instead", file: file, line: line)
+        }
+        
+        XCTAssertEqual(cell.titleText, movie.title, "Expected movie title to be \(String(describing: movie.title)) for movie cell at index (\(index))", file: file, line: line)
+        
+        XCTAssertEqual(cell.releaseDateText, movie.releaseDate, "Expected release date text to be \(String(describing: movie.releaseDate)) for movie cell at index (\(index)", file: file, line: line)
+    }
+    
+    private func makeMovie(
+        title: String = "A title",
+        posterImageURL: URL = URL(string: "https://any-url.com")!,
+        releaseDate: String = "Today"
+    ) -> Movie {
+        Movie(id: UUID().uuidString, title: title, posterImageURL: posterImageURL, releaseDate: releaseDate)
     }
     
 }
