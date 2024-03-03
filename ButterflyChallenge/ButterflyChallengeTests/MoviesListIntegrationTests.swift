@@ -20,6 +20,10 @@ class LoaderSpy: MoviesDataLoader {
     func completeMoviesListLoading(with movies: [Movie] = [], at index: Int = 0) {
         moviesListRequests[index].completion(.success(movies))
     }
+    
+    func completeMoviesListLoadingWithError(_ error: Error, at index: Int = 0) {
+        moviesListRequests[index].completion(.failure(error))
+    }
 }
 
 final class MoviesListIntegrationTests: XCTestCase { 
@@ -28,7 +32,7 @@ final class MoviesListIntegrationTests: XCTestCase {
         let (sut, loader) = makeSUT()
         XCTAssertEqual(loader.loadCallCount, 0)
         
-        sut.simulateAppearence()
+        sut.loadViewIfNeeded()
         XCTAssertEqual(loader.loadCallCount, 0, "Expected to not load movies list on view load")
         
         sut.simulateSearchForText("A movie")
@@ -60,7 +64,7 @@ final class MoviesListIntegrationTests: XCTestCase {
         let movie2 = makeMovie(title: "A new movie", releaseDate: "A new release date")
         let (sut, loader) = makeSUT()
         
-        sut.simulateAppearence()
+        sut.loadViewIfNeeded()
         assertThat(sut, isRendering: [])
         
         sut.simulateSearchForText("A movie")
@@ -90,6 +94,21 @@ final class MoviesListIntegrationTests: XCTestCase {
         sut.simulateSearchForText("Another movie")
         loader.completeMoviesListLoading(with: [], at: 1)
         assertThat(sut, isRendering: [])
+    }
+    
+    func test_loadMoviesCompletion_doesNotAlterCurrentRenderingStateOnError() {
+        let movie0 = makeMovie()
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        
+        sut.simulateSearchForText("A movie")
+        loader.completeMoviesListLoading(with: [movie0], at: 0)
+        assertThat(sut, isRendering: [movie0])
+        
+        sut.simulateUserInitiatedMoviesListReload()
+        loader.completeMoviesListLoadingWithError(anyError())
+        assertThat(sut, isRendering: [movie0])
     }
     
     // MARK: - Helpers
@@ -139,4 +158,10 @@ final class MoviesListIntegrationTests: XCTestCase {
         Movie(id: UUID().uuidString, title: title, posterImageURL: posterImageURL, releaseDate: releaseDate)
     }
     
+}
+
+extension XCTestCase {
+    func anyError() -> Error {
+        NSError(domain: "an error", code: 0)
+    }
 }

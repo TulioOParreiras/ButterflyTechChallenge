@@ -68,7 +68,11 @@ final class MoviesListViewController: UITableViewController {
         guard let url = URL(string: "https://any-url.com") else { return }
         refreshControl?.beginRefreshing()
         moviesLoader.loadMoviesData(from: url) { [weak self] result in
-            self?.moviesList = (try? result.get()) ?? []
+            do {
+                self?.moviesList = try result.get()
+            } catch {
+                print("Failed to load movies with error \(error)")
+            }
             self?.refreshControl?.endRefreshing()
             self?.tableView.reloadData()
         }
