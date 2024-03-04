@@ -332,6 +332,18 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertEqual(loader.cancelledImageURLs, [movie0.posterImageURL, movie1.posterImageURL], "Expected second cancelled image URL request once second image is not near visible anymore")
     }
     
+    func test_movieCell_doesNotRenderLoadedImageWhenNotVisibleAnymore() {
+        let (sut, loader) = makeSUT()
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        loader.completeMoviesListLoading(with: [makeMovie()])
+
+        let view = sut.simulateMovieCellNotVisible(at: 0)
+        loader.completeImageLoading(with: anyImageData())
+        
+        XCTAssertNil(view?.renderedPosterImage, "Expected no rendered image when an image load finishes after the view is not visible anymore")
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {

@@ -161,6 +161,10 @@ extension UIView {
 
 extension XCTestCase {
     
+    func anyImageData() -> Data {
+        return UIImage.make(withColor: .red).pngData()!
+    }
+    
     func anyError() -> Error {
         NSError(domain: "an error", code: 0)
     }
