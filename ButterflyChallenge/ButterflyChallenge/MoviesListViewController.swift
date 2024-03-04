@@ -214,6 +214,8 @@ extension MoviesListViewController: MovieCellControllerDelegate {
                 if let image = UIImage(data: data) {
                     controller?.displayImage(image)
                     controller?.displayError(nil)
+                } else {
+                    controller?.displayError("Invalid image")
                 }
             } catch {
                 controller?.displayError("Failure to load image")
