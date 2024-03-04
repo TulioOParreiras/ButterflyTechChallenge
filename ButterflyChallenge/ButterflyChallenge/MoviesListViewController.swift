@@ -218,6 +218,7 @@ extension MoviesListViewController: MovieCellControllerDelegate {
     func didCancelImageRequest(for controller: MovieCellController) {
         guard let indexPath = indexPath(for: controller) else { return }
         controller.displayLoading(false)
+        loadingTasks[indexPath]?.cancel()
         loadingTasks[indexPath] = nil
     }
 }

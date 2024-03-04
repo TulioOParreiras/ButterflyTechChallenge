@@ -136,6 +136,10 @@ extension UIView {
 
 extension XCTestCase {
     
+    func anyError() -> Error {
+        NSError(domain: "an error", code: 0)
+    }
+    
     func trackForMemoryLeaks(_ object: AnyObject, file: StaticString = #file, line: UInt = #line) {
         addTeardownBlock { [weak object] in
             XCTAssertNil(object, "\(String(describing: object)) was expected to be removed from memory, possible retain cycle", file: file, line: line)
@@ -144,3 +148,15 @@ extension XCTestCase {
     
 }
 
+extension UIImage {
+    static func make(withColor color: UIColor) -> UIImage {
+        let rect = CGRect(x: 0, y: 0, width: 1, height: 1)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        
+        return UIGraphicsImageRenderer(size: rect.size, format: format).image { rendererContext in
+            color.setFill()
+            rendererContext.fill(rect)
+        }
+    }
+}
