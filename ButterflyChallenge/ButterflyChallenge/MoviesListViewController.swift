@@ -188,16 +188,25 @@ final class MoviesListViewController: UITableViewController {
         refreshControl?.beginRefreshing()
         errorView.message = nil
         moviesLoader.loadMoviesData(from: url) { [weak self] result in
-            guard let self else { return }
-            do {
-                let moviesList = try result.get()
-                self.tableModel = moviesList.map { MovieCellController(model: $0, delegate: WeakRefVirtualProxy(self))}
-            } catch {
-                self.errorView.message = "Couldn't connect to server"
-            }
-            self.refreshControl?.endRefreshing()
-            self.tableView.reloadData()
+            self?.onMoviesLoadSuccess(result)
         }
+    }
+    
+    private func onMoviesLoadSuccess(_ result: MoviesDataLoader.LoadResult) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.onMoviesLoadSuccess(result)
+            }
+            return
+        }
+        do {
+            let moviesList = try result.get()
+            tableModel = moviesList.map { MovieCellController(model: $0, delegate: WeakRefVirtualProxy(self))}
+        } catch {
+            errorView.message = "Couldn't connect to server"
+        }
+        refreshControl?.endRefreshing()
+        tableView.reloadData()
     }
     
     private func cellController(forRowAt indexPath: IndexPath) -> MovieCellController {

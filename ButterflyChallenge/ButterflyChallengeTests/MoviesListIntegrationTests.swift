@@ -344,6 +344,19 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertNil(view?.renderedPosterImage, "Expected no rendered image when an image load finishes after the view is not visible anymore")
     }
     
+    func test_loadMoviesCompletion_dispatchesFromBackgroundToMainThread() {
+        let (sut, loader) = makeSUT()
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+
+        let exp = expectation(description: "Wait for background queue")
+        DispatchQueue.global().async {
+            loader.completeMoviesListLoading()
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1.0)
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
