@@ -193,6 +193,27 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertEqual(loader.cancelledImageURLs, [movie0.posterImageURL, movie1.posterImageURL], "Expected two cancelled image URL requests once second image is also not visible anymore")
     }
     
+    func test_movieCelloadingIndicator_isVisibleWhileLoadingImage() {
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        loader.completeMoviesListLoading(with: [makeMovie(), makeMovie()])
+        
+        let view0 = sut.simulateMovieCellVisible(at: 0)
+        let view1 = sut.simulateMovieCellVisible(at: 1)
+        XCTAssertEqual(view0?.isShowingImageLoadingIndicator, true, "Expected loading indicator for first view while loading first image")
+        XCTAssertEqual(view1?.isShowingImageLoadingIndicator, true, "Expected loading indicator for second view while loading second image")
+        
+        loader.completeImageLoading(at: 0)
+        XCTAssertEqual(view0?.isShowingImageLoadingIndicator, false, "Expected no loading indicator for first view once first image loading completes successfully")
+        XCTAssertEqual(view1?.isShowingImageLoadingIndicator, true, "Expected no loading indicator state change for second view once first image loading completes successfully")
+        
+        loader.completeImageLoadingWithError(at: 1)
+        XCTAssertEqual(view0?.isShowingImageLoadingIndicator, false, "Expected no loading indicator state change for first view once second image loading completes with error")
+        XCTAssertEqual(view1?.isShowingImageLoadingIndicator, false, "Expected no loading indicator for second view once second image loading completes with error")
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {

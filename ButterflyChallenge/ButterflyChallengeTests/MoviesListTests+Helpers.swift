@@ -34,6 +34,7 @@ extension MovieViewCell {
     var titleText: String? { titleLabel.text }
     var releaseDateText: String? { releaseDateLabel.text }
     var renderedPosterImage: Data? { posterImageView.image?.pngData() }
+    var isShowingImageLoadingIndicator: Bool { return posterImageContainer.isShimmering }
 }
 
 extension MoviesListViewController {

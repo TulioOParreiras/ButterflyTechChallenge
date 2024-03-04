@@ -7,6 +7,80 @@
 
 import UIKit
 
+final class WeakRefVirtualProxy<T: AnyObject> {
+    private weak var object: T?
+    
+    init(_ object: T) {
+        self.object = object
+    }
+}
+
+extension WeakRefVirtualProxy: MovieCellControllerDelegate where T: MovieCellControllerDelegate {
+    func didRequestImage(for controller: MovieCellController) {
+        object?.didRequestImage(for: controller)
+    }
+    
+    func didCancelImageRequest(for controller: MovieCellController) {
+        object?.didCancelImageRequest(for: controller)
+    }
+}
+
+extension UITableView {
+    func dequeueReusableCell<T: UITableViewCell>() -> T {
+        let identifier = String(describing: T.self)
+        return dequeueReusableCell(withIdentifier: identifier) as! T
+    }
+}
+
+protocol MovieCellControllerDelegate {
+    func didRequestImage(for controller: MovieCellController)
+    func didCancelImageRequest(for controller: MovieCellController)
+}
+
+final class MovieCellController {
+    typealias ResourceViewModel = UIImage
+    
+    let model: Movie
+    let delegate: MovieCellControllerDelegate
+    
+    private var cell: MovieViewCell?
+    
+    init(model: Movie, delegate: MovieCellControllerDelegate) {
+        self.model = model
+        self.delegate = delegate
+    }
+    
+    func view(in tableView: UITableView) -> UITableViewCell {
+        cell = tableView.dequeueReusableCell()
+        cell?.titleLabel.text = model.title
+        cell?.releaseDateLabel.text = model.releaseDate
+        delegate.didRequestImage(for: self)
+        return cell!
+    }
+    
+    func preload() {
+        delegate.didRequestImage(for: self)
+    }
+    
+    func cancelLoad() {
+        releaseCellForReuse()
+        delegate.didCancelImageRequest(for: self)
+    }
+    
+    func displayImage(_ image: UIImage) {
+        cell?.posterImageView.image = image
+    }
+    
+    func displayLoading(_ isLoading: Bool) {
+        cell?.posterImageContainer.isShimmering = isLoading
+    }
+
+    private func releaseCellForReuse() {
+        cell = nil
+    }
+}
+
+
 public protocol MovieImageDataLoaderTask {
     func cancel()
 }
@@ -44,6 +118,7 @@ final class MovieViewCell: UITableViewCell {
     let titleLabel = UILabel()
     let releaseDateLabel = UILabel()
     let posterImageView = UIImageView()
+    let posterImageContainer = UIView()
 }
 
 final class MoviesListViewController: UITableViewController {
@@ -52,9 +127,9 @@ final class MoviesListViewController: UITableViewController {
     lazy var searchBar = UISearchBar()
     lazy var errorView = ErrorView()
     
-    var moviesList = [Movie]()
-    
-    var imageTasks = [IndexPath: MovieImageDataLoaderTask]()
+    var tableModel = [MovieCellController]()
+    private var loadingControllers = [IndexPath: MovieCellController]()
+    private var loadingTasks = [IndexPath: MovieImageDataLoaderTask]()
     
     init(moviesLoader: MoviesDataLoader, imageDataLoader: MovieImageDataLoader) {
         self.moviesLoader = moviesLoader
@@ -94,23 +169,56 @@ final class MoviesListViewController: UITableViewController {
         refreshControl?.beginRefreshing()
         errorView.message = nil
         moviesLoader.loadMoviesData(from: url) { [weak self] result in
+            guard let self else { return }
             do {
-                self?.moviesList = try result.get()
+                let moviesList = try result.get()
+                self.tableModel = moviesList.map { MovieCellController(model: $0, delegate: WeakRefVirtualProxy(self))}
             } catch {
-                self?.errorView.message = "Couldn't connect to server"
+                self.errorView.message = "Couldn't connect to server"
             }
-            self?.refreshControl?.endRefreshing()
-            self?.tableView.reloadData()
+            self.refreshControl?.endRefreshing()
+            self.tableView.reloadData()
         }
     }
     
-    private func loadImage(at indexPath: IndexPath) {
-        imageTasks[indexPath] = imageDataLoader.loadImageData(from: moviesList[indexPath.row].posterImageURL, completion: { _ in })
+    private func cellController(forRowAt indexPath: IndexPath) -> MovieCellController {
+        let controller = tableModel[indexPath.row]
+        loadingControllers[indexPath] = controller
+        return controller
     }
     
-    private func cancelImageLoad(at indexPath: IndexPath) {
-        imageTasks[indexPath]?.cancel()
-        imageTasks[indexPath] = nil
+    private func cancelImageLoad(forRowAt indexPath: IndexPath) {
+        loadingControllers[indexPath]?.cancelLoad()
+        loadingControllers[indexPath] = nil
+    }
+}
+
+extension MoviesListViewController: MovieCellControllerDelegate {
+    fileprivate func indexPath(for controller: MovieCellController) -> IndexPath? {
+        loadingControllers.first(where: { $0.value.model.id == controller.model.id })?.key
+    }
+    
+    func didRequestImage(for controller: MovieCellController) {
+        guard let indexPath = indexPath(for: controller) else { return }
+        controller.displayLoading(true)
+        let task = imageDataLoader.loadImageData(from: controller.model.posterImageURL, completion: { [weak controller] result in
+            controller?.displayLoading(false)
+            do {
+                let data = try result.get()
+                if let image = UIImage(data: data) {
+                    controller?.displayImage(image)
+                }
+            } catch {
+                print("Error \(error) while loading image")
+            }
+        })
+        loadingTasks[indexPath] = task
+    }
+    
+    func didCancelImageRequest(for controller: MovieCellController) {
+        guard let indexPath = indexPath(for: controller) else { return }
+        controller.displayLoading(false)
+        loadingTasks[indexPath] = nil
     }
 }
 
@@ -127,15 +235,11 @@ extension MoviesListViewController: UISearchBarDelegate {
 extension MoviesListViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        moviesList.count
+        tableModel.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: MovieViewCell.self), for: indexPath) as! MovieViewCell
-        cell.titleLabel.text = moviesList[indexPath.row].title
-        cell.releaseDateLabel.text = moviesList[indexPath.row].releaseDate
-        loadImage(at: indexPath)
-        return cell
+        return cellController(forRowAt: indexPath).view(in: tableView)
     }
     
 }
@@ -145,7 +249,7 @@ extension MoviesListViewController {
 extension MoviesListViewController {
     
     override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cancelImageLoad(at: indexPath)
+        cancelImageLoad(forRowAt: indexPath)
     }
     
 }
@@ -156,14 +260,60 @@ extension MoviesListViewController: UITableViewDataSourcePrefetching {
     
     func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
         indexPaths.forEach { indexPath in
-            loadImage(at: indexPath)
+            cellController(forRowAt: indexPath).preload()
         }
     }
     
     func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
         indexPaths.forEach { indexPath in
-            cancelImageLoad(at: indexPath)
+            cancelImageLoad(forRowAt: indexPath)
         }
     }
     
+}
+
+extension UIView {
+    public var isShimmering: Bool {
+        set {
+            if newValue {
+                startShimmering()
+            } else {
+                stopShimmering()
+            }
+        }
+        
+        get {
+            return layer.mask?.animation(forKey: shimmerAnimationKey) != nil
+        }
+    }
+    
+    private var shimmerAnimationKey: String {
+        return "shimmer"
+    }
+    
+    private func startShimmering() {
+        let white = UIColor.white.cgColor
+        let alpha = UIColor.white.withAlphaComponent(0.75).cgColor
+        let width = bounds.width
+        let height = bounds.height
+        
+        let gradient = CAGradientLayer()
+        gradient.colors = [alpha, white, alpha]
+        gradient.startPoint = CGPoint(x: 0.0, y: 0.4)
+        gradient.endPoint = CGPoint(x: 1.0, y: 0.6)
+        gradient.locations = [0.4, 0.5, 0.6]
+        gradient.frame = CGRect(x: -width, y: 0, width: width*3, height: height)
+        layer.mask = gradient
+        
+        let animation = CABasicAnimation(keyPath: #keyPath(CAGradientLayer.locations))
+        animation.fromValue = [0.0, 0.1, 0.2]
+        animation.toValue = [0.8, 0.9, 1.0]
+        animation.duration = 1.25
+        animation.repeatCount = .infinity
+        gradient.add(animation, forKey: shimmerAnimationKey)
+    }
+    
+    private func stopShimmering() {
+        layer.mask = nil
+    }
 }
