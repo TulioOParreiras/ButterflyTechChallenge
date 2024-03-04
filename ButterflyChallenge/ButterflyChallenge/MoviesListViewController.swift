@@ -161,6 +161,7 @@ final class MoviesListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.prefetchDataSource = self
         tableView.register(MovieViewCell.self, forCellReuseIdentifier: String(describing: MovieViewCell.self))
         configureRefreshControl()
         configureSearchBar()
