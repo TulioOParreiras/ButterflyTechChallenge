@@ -75,6 +75,14 @@ extension MoviesListViewController {
         ds?.tableView(tableView, prefetchRowsAt: [index])
     }
     
+    func simulateMovieCellNotNearVisible(at row: Int) {
+        simulateMovieCellNearVisible(at: row)
+        
+        let ds = tableView.prefetchDataSource
+        let index = IndexPath(row: row, section: movisListSection)
+        ds?.tableView?(tableView, cancelPrefetchingForRowsAt: [index])
+    }
+    
     var isShowingLoadingIndicator: Bool {
         refreshControl!.isRefreshing == true
     }

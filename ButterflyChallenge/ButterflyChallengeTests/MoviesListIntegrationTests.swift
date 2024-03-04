@@ -315,6 +315,23 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertEqual(loader.loadedImageURLs, [movie0.posterImageURL, movie1.posterImageURL], "Expected second image URL request once second image is near visible")
     }
     
+    func test_movieCell_cancelsImageURLPreloadingWhenNotNearVisibleAnymore() {
+        let movie0 = makeMovie(posterImageURL: URL(string: "http://url-0.com")!)
+        let movie1 = makeMovie(posterImageURL: URL(string: "http://url-1.com")!)
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        loader.completeMoviesListLoading(with: [movie0, movie1])
+        XCTAssertEqual(loader.cancelledImageURLs, [], "Expected no cancelled image URL requests until image is not near visible")
+        
+        sut.simulateMovieCellNotNearVisible(at: 0)
+        XCTAssertEqual(loader.cancelledImageURLs, [movie0.posterImageURL], "Expected first cancelled image URL request once first image is not near visible anymore")
+        
+        sut.simulateMovieCellNotNearVisible(at: 1)
+        XCTAssertEqual(loader.cancelledImageURLs, [movie0.posterImageURL, movie1.posterImageURL], "Expected second cancelled image URL request once second image is not near visible anymore")
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
