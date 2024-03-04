@@ -20,6 +20,15 @@ struct Movie {
     let releaseDate: String
 }
 
+final class ErrorView: UIView {
+    let label = UILabel()
+    
+    var message: String? {
+        get { return label.text }
+        set { label.text = newValue }
+    }
+}
+
 final class MovieViewCell: UITableViewCell {
     let titleLabel = UILabel()
     let releaseDateLabel = UILabel()
@@ -29,6 +38,7 @@ final class MovieViewCell: UITableViewCell {
 final class MoviesListViewController: UITableViewController {
     let moviesLoader: MoviesDataLoader
     lazy var searchBar = UISearchBar()
+    lazy var errorView = ErrorView()
     
     var moviesList = [Movie]()
     
@@ -67,11 +77,12 @@ final class MoviesListViewController: UITableViewController {
     @objc func refresh() {
         guard let url = URL(string: "https://any-url.com") else { return }
         refreshControl?.beginRefreshing()
+        errorView.message = nil
         moviesLoader.loadMoviesData(from: url) { [weak self] result in
             do {
                 self?.moviesList = try result.get()
             } catch {
-                print("Failed to load movies with error \(error)")
+                self?.errorView.message = "Couldn't connect to server"
             }
             self?.refreshControl?.endRefreshing()
             self?.tableView.reloadData()

@@ -88,6 +88,10 @@ extension MoviesListViewController {
         return 0
     }
     
+    var errorMessage: String? {
+        errorView.message
+    }
+    
 }
 
 extension UIRefreshControl {

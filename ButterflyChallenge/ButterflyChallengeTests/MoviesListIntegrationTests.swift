@@ -107,8 +107,22 @@ final class MoviesListIntegrationTests: XCTestCase {
         assertThat(sut, isRendering: [movie0])
         
         sut.simulateUserInitiatedMoviesListReload()
-        loader.completeMoviesListLoadingWithError(anyError())
+        loader.completeMoviesListLoadingWithError(anyError(), at: 1)
         assertThat(sut, isRendering: [movie0])
+    }
+    
+    func test_loadMoviesCompletion_rendersErrorMessageOnErrorUntilNextReload() {
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        XCTAssertEqual(sut.errorMessage, nil)
+        
+        sut.simulateSearchForText("A movie")
+        loader.completeMoviesListLoadingWithError(anyError())
+        XCTAssertEqual(sut.errorMessage, "Couldn't connect to server")
+        
+        sut.simulateUserInitiatedMoviesListReload()
+        XCTAssertEqual(sut.errorMessage, nil)
     }
     
     // MARK: - Helpers
