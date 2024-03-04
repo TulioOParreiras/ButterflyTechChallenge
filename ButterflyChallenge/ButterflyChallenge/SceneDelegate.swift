@@ -7,9 +7,19 @@
 
 import UIKit
 
-struct Mock: MoviesDataLoader {
-    func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) {
+struct Mock: MoviesDataLoader, MovieImageDataLoader {
+    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) {
         
+    }
+    
+    struct TaskMock: MovieImageDataLoaderTask {
+        func cancel() {
+            
+        }
+    }
+    
+    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> MovieImageDataLoaderTask {
+        TaskMock()
     }
 }
 
@@ -21,7 +31,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = MoviesListViewController(moviesLoader: Mock())
+        window?.rootViewController = MoviesListViewController(moviesLoader: Mock(), imageDataLoader: Mock())
         window?.makeKeyAndVisible()
     }
 

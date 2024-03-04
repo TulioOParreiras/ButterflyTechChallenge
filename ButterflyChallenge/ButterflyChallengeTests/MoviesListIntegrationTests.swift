@@ -9,11 +9,14 @@ import XCTest
 
 @testable import ButterflyChallenge
 
-class LoaderSpy: MoviesDataLoader {
-    var moviesListRequests = [(url: URL, completion: (LoadResult) -> Void)]()
+class LoaderSpy: MoviesDataLoader, MovieImageDataLoader {
+    
+    // MARK: - MoviesDataLoader
+    
+    var moviesListRequests = [(url: URL, completion: (MoviesDataLoader.LoadResult) -> Void)]()
     var loadCallCount: Int { moviesListRequests.count }
     
-    func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) {
+    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) {
         moviesListRequests.append((url, completion))
     }
     
@@ -21,8 +24,38 @@ class LoaderSpy: MoviesDataLoader {
         moviesListRequests[index].completion(.success(movies))
     }
     
-    func completeMoviesListLoadingWithError(_ error: Error, at index: Int = 0) {
+    func completeMoviesListLoadingWithError(at index: Int = 0) {
+        let error = NSError(domain: "an error", code: 0)
         moviesListRequests[index].completion(.failure(error))
+    }
+    
+    // MARK: - MovieImageDataLoader
+    
+    private struct TaskSpy: MovieImageDataLoaderTask {
+        let cancelCallback: () -> Void
+        func cancel() { cancelCallback() }
+    }
+    
+    private var imageRequests = [(url: URL, completion: (MovieImageDataLoader.LoadResult) -> Void)]()
+    
+    var loadedImageURLs: [URL] {
+        return imageRequests.map { $0.url }
+    }
+    
+    private(set) var cancelledImageURLs = [URL]()
+    
+    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> MovieImageDataLoaderTask {
+        imageRequests.append((url, completion))
+        return TaskSpy { [weak self] in self?.cancelledImageURLs.append(url) }
+    }
+    
+    func completeImageLoading(with imageData: Data = Data(), at index: Int = 0) {
+        imageRequests[index].completion(.success(imageData))
+    }
+    
+    func completeImageLoadingWithError(at index: Int = 0) {
+        let error = NSError(domain: "an error", code: 0)
+        imageRequests[index].completion(.failure(error))
     }
 }
 
@@ -107,7 +140,7 @@ final class MoviesListIntegrationTests: XCTestCase {
         assertThat(sut, isRendering: [movie0])
         
         sut.simulateUserInitiatedMoviesListReload()
-        loader.completeMoviesListLoadingWithError(anyError(), at: 1)
+        loader.completeMoviesListLoadingWithError(at: 1)
         assertThat(sut, isRendering: [movie0])
     }
     
@@ -118,18 +151,53 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertEqual(sut.errorMessage, nil)
         
         sut.simulateSearchForText("A movie")
-        loader.completeMoviesListLoadingWithError(anyError())
+        loader.completeMoviesListLoadingWithError()
         XCTAssertEqual(sut.errorMessage, "Couldn't connect to server")
         
         sut.simulateUserInitiatedMoviesListReload()
         XCTAssertEqual(sut.errorMessage, nil)
     }
     
+    func test_movieCell_loadsImageURLWhenVisible() {
+        let movie0 = makeMovie(posterImageURL: URL(string: "http://url-0.com")!)
+        let movie1 = makeMovie(posterImageURL: URL(string: "http://url-1.com")!)
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        loader.completeMoviesListLoading(with: [movie0, movie1])
+        
+        XCTAssertEqual(loader.loadedImageURLs, [], "Expected no image URL requests until views become visible")
+
+        sut.simulateMovieCellVisible(at: 0)
+        XCTAssertEqual(loader.loadedImageURLs, [movie0.posterImageURL], "Expected first image URL request once first view becomes visible")
+        
+        sut.simulateMovieCellVisible(at: 1)
+        XCTAssertEqual(loader.loadedImageURLs, [movie0.posterImageURL, movie1.posterImageURL], "Expected second image URL request once second view also becomes visible")
+    }
+    
+    func test_movieCell_cancelsImageLoadingWhenNotVisibleAnymore() {
+        let movie0 = makeMovie(posterImageURL: URL(string: "http://url-0.com")!)
+        let movie1 = makeMovie(posterImageURL: URL(string: "http://url-1.com")!)
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        loader.completeMoviesListLoading(with: [movie0, movie1])
+        XCTAssertEqual(loader.cancelledImageURLs, [], "Expected no cancelled image URL requests until image is not visible")
+        
+        sut.simulateMovieCellNotVisible(at: 0)
+        XCTAssertEqual(loader.cancelledImageURLs, [movie0.posterImageURL], "Expected one cancelled image URL request once first image is not visible anymore")
+        
+        sut.simulateMovieCellNotVisible(at: 1)
+        XCTAssertEqual(loader.cancelledImageURLs, [movie0.posterImageURL, movie1.posterImageURL], "Expected two cancelled image URL requests once second image is also not visible anymore")
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
         let loader = LoaderSpy()
-        let sut = MoviesListViewController(moviesLoader: loader)
+        let sut = MoviesListViewController(moviesLoader: loader, imageDataLoader: loader)
         trackForMemoryLeaks(loader, file: file, line: line)
         trackForMemoryLeaks(sut, file: file, line: line)
         return (sut, loader)

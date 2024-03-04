@@ -7,6 +7,17 @@
 
 import UIKit
 
+public protocol MovieImageDataLoaderTask {
+    func cancel()
+}
+
+public protocol MovieImageDataLoader {
+    typealias LoadResult = Swift.Result<Data, Error>
+    
+    func loadImageData(from url: URL, completion: @escaping (LoadResult) -> Void) -> MovieImageDataLoaderTask
+}
+
+
 protocol MoviesDataLoader {
     typealias LoadResult = Swift.Result<[Movie], Error>
     
@@ -37,13 +48,17 @@ final class MovieViewCell: UITableViewCell {
 
 final class MoviesListViewController: UITableViewController {
     let moviesLoader: MoviesDataLoader
+    let imageDataLoader: MovieImageDataLoader
     lazy var searchBar = UISearchBar()
     lazy var errorView = ErrorView()
     
     var moviesList = [Movie]()
     
-    init(moviesLoader: MoviesDataLoader) {
+    var imageTasks = [IndexPath: MovieImageDataLoaderTask]()
+    
+    init(moviesLoader: MoviesDataLoader, imageDataLoader: MovieImageDataLoader) {
         self.moviesLoader = moviesLoader
+        self.imageDataLoader = imageDataLoader
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -88,6 +103,15 @@ final class MoviesListViewController: UITableViewController {
             self?.tableView.reloadData()
         }
     }
+    
+    private func loadImage(at indexPath: IndexPath) {
+        imageTasks[indexPath] = imageDataLoader.loadImageData(from: moviesList[indexPath.row].posterImageURL, completion: { _ in })
+    }
+    
+    private func cancelImageLoad(at indexPath: IndexPath) {
+        imageTasks[indexPath]?.cancel()
+        imageTasks[indexPath] = nil
+    }
 }
 
 // MARK: - UISearchBarDelegate
@@ -110,7 +134,36 @@ extension MoviesListViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: MovieViewCell.self), for: indexPath) as! MovieViewCell
         cell.titleLabel.text = moviesList[indexPath.row].title
         cell.releaseDateLabel.text = moviesList[indexPath.row].releaseDate
+        loadImage(at: indexPath)
         return cell
+    }
+    
+}
+
+// MARK: - UITableViewDelegate
+
+extension MoviesListViewController {
+    
+    override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cancelImageLoad(at: indexPath)
+    }
+    
+}
+
+// MARK: - UITableViewDataSourcePrefetching
+
+extension MoviesListViewController: UITableViewDataSourcePrefetching {
+    
+    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
+        indexPaths.forEach { indexPath in
+            loadImage(at: indexPath)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
+        indexPaths.forEach { indexPath in
+            cancelImageLoad(at: indexPath)
+        }
     }
     
 }

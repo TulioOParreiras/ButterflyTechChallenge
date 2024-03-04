@@ -41,6 +41,22 @@ extension MoviesListViewController {
         refreshControl?.simulatePullToRefresh()
     }
     
+    @discardableResult
+    func simulateMovieCellVisible(at index: Int) -> MovieViewCell? {
+        return movieView(at: index) as? MovieViewCell
+    }
+    
+    @discardableResult
+    func simulateMovieCellNotVisible(at row: Int) -> MovieViewCell? {
+        let view = simulateMovieCellVisible(at: row)
+        
+        let delegate = tableView.delegate
+        let index = IndexPath(row: row, section: movisListSection)
+        delegate?.tableView?(tableView, didEndDisplaying: view!, forRowAt: index)
+        
+        return view
+    }
+    
     var isShowingLoadingIndicator: Bool {
         refreshControl!.isRefreshing == true
     }
