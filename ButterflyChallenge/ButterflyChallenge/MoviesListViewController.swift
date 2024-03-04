@@ -54,6 +54,7 @@ final class MovieCellController {
         cell = tableView.dequeueReusableCell()
         cell?.titleLabel.text = model.title
         cell?.releaseDateLabel.text = model.releaseDate
+        cell?.posterImageRetryButton.isHidden = true
         delegate.didRequestImage(for: self)
         return cell!
     }
@@ -73,6 +74,10 @@ final class MovieCellController {
     
     func displayLoading(_ isLoading: Bool) {
         cell?.posterImageContainer.isShimmering = isLoading
+    }
+    
+    func displayError(_ message: String?) {
+        cell?.posterImageRetryButton.isHidden = message == nil
     }
 
     private func releaseCellForReuse() {
@@ -119,6 +124,7 @@ final class MovieViewCell: UITableViewCell {
     let releaseDateLabel = UILabel()
     let posterImageView = UIImageView()
     let posterImageContainer = UIView()
+    let posterImageRetryButton = UIButton()
 }
 
 final class MoviesListViewController: UITableViewController {
@@ -207,9 +213,10 @@ extension MoviesListViewController: MovieCellControllerDelegate {
                 let data = try result.get()
                 if let image = UIImage(data: data) {
                     controller?.displayImage(image)
+                    controller?.displayError(nil)
                 }
             } catch {
-                print("Error \(error) while loading image")
+                controller?.displayError("Failure to load image")
             }
         })
         loadingTasks[indexPath] = task
