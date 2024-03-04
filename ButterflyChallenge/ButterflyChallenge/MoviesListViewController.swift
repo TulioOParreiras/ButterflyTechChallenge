@@ -55,6 +55,7 @@ final class MovieCellController {
         cell?.titleLabel.text = model.title
         cell?.releaseDateLabel.text = model.releaseDate
         cell?.posterImageRetryButton.isHidden = true
+        cell?.onRetry = preload
         delegate.didRequestImage(for: self)
         return cell!
     }
@@ -124,7 +125,18 @@ final class MovieViewCell: UITableViewCell {
     let releaseDateLabel = UILabel()
     let posterImageView = UIImageView()
     let posterImageContainer = UIView()
-    let posterImageRetryButton = UIButton()
+    lazy var posterImageRetryButton: UIButton = {
+        let button = UIButton()
+        button.addTarget(self, action: #selector(retryButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    var onRetry: (() -> Void)?
+    
+    @objc func retryButtonTapped() {
+        onRetry?()
+    }
+    
 }
 
 final class MoviesListViewController: UITableViewController {

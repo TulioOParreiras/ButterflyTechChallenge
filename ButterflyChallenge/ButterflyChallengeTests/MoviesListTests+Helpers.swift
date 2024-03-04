@@ -36,6 +36,16 @@ extension MovieViewCell {
     var renderedPosterImage: Data? { posterImageView.image?.pngData() }
     var isShowingImageLoadingIndicator: Bool { return posterImageContainer.isShimmering }
     var isShowingRetryAction: Bool { posterImageRetryButton.isHidden == false }
+    
+    func simulateRetryAction() {
+        posterImageRetryButton.simulateTap()
+    }
+}
+
+extension UIButton {
+    func simulateTap() {
+        simulate(event: .touchUpInside)
+    }
 }
 
 extension MoviesListViewController {
