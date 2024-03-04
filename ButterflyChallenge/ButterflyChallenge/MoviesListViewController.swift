@@ -86,22 +86,20 @@ final class MovieCellController {
     }
 }
 
-
-public protocol MovieImageDataLoaderTask {
+public protocol DataLoaderTask {
     func cancel()
 }
 
 public protocol MovieImageDataLoader {
     typealias LoadResult = Swift.Result<Data, Error>
     
-    func loadImageData(from url: URL, completion: @escaping (LoadResult) -> Void) -> MovieImageDataLoaderTask
+    func loadImageData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask
 }
-
 
 protocol MoviesDataLoader {
     typealias LoadResult = Swift.Result<[Movie], Error>
     
-    func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void)
+    func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask
 }
 
 struct Movie {
@@ -147,7 +145,8 @@ final class MoviesListViewController: UITableViewController {
     
     var tableModel = [MovieCellController]()
     private var loadingControllers = [IndexPath: MovieCellController]()
-    private var loadingTasks = [IndexPath: MovieImageDataLoaderTask]()
+    private var loadingMoviesTask: DataLoaderTask?
+    private var loadingTasks = [IndexPath: DataLoaderTask]()
     
     init(moviesLoader: MoviesDataLoader, imageDataLoader: MovieImageDataLoader) {
         self.moviesLoader = moviesLoader
@@ -187,7 +186,8 @@ final class MoviesListViewController: UITableViewController {
         guard let url = URL(string: "https://any-url.com") else { return }
         refreshControl?.beginRefreshing()
         errorView.message = nil
-        moviesLoader.loadMoviesData(from: url) { [weak self] result in
+        loadingMoviesTask?.cancel()
+        loadingMoviesTask = moviesLoader.loadMoviesData(from: url) { [weak self] result in
             self?.onMoviesLoad(result)
         }
     }
@@ -199,6 +199,7 @@ final class MoviesListViewController: UITableViewController {
             }
             return
         }
+        loadingMoviesTask = nil
         do {
             let moviesList = try result.get()
             tableModel = moviesList.map { MovieCellController(model: $0, delegate: WeakRefVirtualProxy(self))}

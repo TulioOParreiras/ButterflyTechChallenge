@@ -7,19 +7,56 @@
 
 import UIKit
 
-struct Mock: MoviesDataLoader, MovieImageDataLoader {
-    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) {
-        
+class Mock: MoviesDataLoader, MovieImageDataLoader {
+    
+    private struct TaskSpy: DataLoaderTask {
+        let cancelCallback: () -> Void
+        func cancel() { cancelCallback() }
     }
     
-    struct TaskMock: MovieImageDataLoaderTask {
-        func cancel() {
-            
-        }
+    // MARK: - MoviesDataLoader
+    
+    var moviesListRequests = [(url: URL, completion: (MoviesDataLoader.LoadResult) -> Void)]()
+    var loadCallCount: Int { moviesListRequests.count }
+    
+    private(set) var cancelledMoviesListURLs = [URL]()
+    
+    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) -> DataLoaderTask {
+        moviesListRequests.append((url, completion))
+        return TaskSpy { [weak self] in self?.cancelledMoviesListURLs.append(url) }
     }
     
-    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> MovieImageDataLoaderTask {
-        TaskMock()
+    func completeMoviesListLoading(with movies: [Movie] = [], at index: Int = 0) {
+        moviesListRequests[index].completion(.success(movies))
+    }
+    
+    func completeMoviesListLoadingWithError(at index: Int = 0) {
+        let error = NSError(domain: "an error", code: 0)
+        moviesListRequests[index].completion(.failure(error))
+    }
+    
+    // MARK: - MovieImageDataLoader
+    
+    private var imageRequests = [(url: URL, completion: (MovieImageDataLoader.LoadResult) -> Void)]()
+    
+    var loadedImageURLs: [URL] {
+        return imageRequests.map { $0.url }
+    }
+    
+    private(set) var cancelledImageURLs = [URL]()
+    
+    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> DataLoaderTask {
+        imageRequests.append((url, completion))
+        return TaskSpy { [weak self] in self?.cancelledImageURLs.append(url) }
+    }
+    
+    func completeImageLoading(with imageData: Data = Data(), at index: Int = 0) {
+        imageRequests[index].completion(.success(imageData))
+    }
+    
+    func completeImageLoadingWithError(at index: Int = 0) {
+        let error = NSError(domain: "an error", code: 0)
+        imageRequests[index].completion(.failure(error))
     }
 }
 
@@ -30,8 +67,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
+        let loader = Mock()
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = MoviesListViewController(moviesLoader: Mock(), imageDataLoader: Mock())
+        window?.rootViewController = MoviesListViewController(moviesLoader: loader, imageDataLoader: loader)
         window?.makeKeyAndVisible()
     }
 
@@ -63,6 +101,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
 
-
 }
-

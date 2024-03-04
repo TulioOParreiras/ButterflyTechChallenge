@@ -11,13 +11,21 @@ import XCTest
 
 class LoaderSpy: MoviesDataLoader, MovieImageDataLoader {
     
+    private struct TaskSpy: DataLoaderTask {
+        let cancelCallback: () -> Void
+        func cancel() { cancelCallback() }
+    }
+    
     // MARK: - MoviesDataLoader
     
     var moviesListRequests = [(url: URL, completion: (MoviesDataLoader.LoadResult) -> Void)]()
     var loadCallCount: Int { moviesListRequests.count }
     
-    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) {
+    private(set) var cancelledMoviesListURLs = [URL]()
+    
+    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) -> DataLoaderTask {
         moviesListRequests.append((url, completion))
+        return TaskSpy { [weak self] in self?.cancelledMoviesListURLs.append(url) }
     }
     
     func completeMoviesListLoading(with movies: [Movie] = [], at index: Int = 0) {
@@ -31,11 +39,6 @@ class LoaderSpy: MoviesDataLoader, MovieImageDataLoader {
     
     // MARK: - MovieImageDataLoader
     
-    private struct TaskSpy: MovieImageDataLoaderTask {
-        let cancelCallback: () -> Void
-        func cancel() { cancelCallback() }
-    }
-    
     private var imageRequests = [(url: URL, completion: (MovieImageDataLoader.LoadResult) -> Void)]()
     
     var loadedImageURLs: [URL] {
@@ -44,7 +47,7 @@ class LoaderSpy: MoviesDataLoader, MovieImageDataLoader {
     
     private(set) var cancelledImageURLs = [URL]()
     
-    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> MovieImageDataLoaderTask {
+    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> DataLoaderTask {
         imageRequests.append((url, completion))
         return TaskSpy { [weak self] in self?.cancelledImageURLs.append(url) }
     }
@@ -76,6 +79,25 @@ final class MoviesListIntegrationTests: XCTestCase {
         
         sut.simulateUserInitiatedMoviesListReload()
         XCTAssertEqual(loader.loadCallCount, 3, "Expected another refresh request on another pull down to refresh")
+    }
+    
+    func test_loadMoviesActions_cancelPreviousLoadRequests() {
+        let (sut, loader) = makeSUT()
+        sut.loadViewIfNeeded()
+        XCTAssertTrue(loader.cancelledMoviesListURLs.isEmpty, "Expected no cancelled movie search URL requests until two searches are requested")
+        
+        sut.simulateSearchForText("A")
+        XCTAssertTrue(loader.cancelledMoviesListURLs.isEmpty, "Expected no cancelled movie search URL requests until two searches are requested")
+        
+        sut.simulateSearchForText("Ab")
+        XCTAssertEqual(loader.cancelledMoviesListURLs.count, 1, "Expected one cancelled movie search URL request once first request was not finished and a new search has been made")
+        
+        sut.simulateSearchForText("Abc")
+        XCTAssertEqual(loader.cancelledMoviesListURLs.count, 2, "Expected two cancelled movie search URL request since first and second requests were not finished and a new search has been made")
+        
+        loader.completeMoviesListLoading()
+        sut.simulateSearchForText("Abcd")
+        XCTAssertEqual(loader.cancelledMoviesListURLs.count, 2, "Expected two cancelled movie search URL request since previous request has been finished before a new one has been requested")
     }
     
     func test_loadingMoviesIndicator_isVisibleWhileLoadingMoviesList() {
