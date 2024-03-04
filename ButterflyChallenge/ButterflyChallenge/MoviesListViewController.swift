@@ -188,14 +188,14 @@ final class MoviesListViewController: UITableViewController {
         refreshControl?.beginRefreshing()
         errorView.message = nil
         moviesLoader.loadMoviesData(from: url) { [weak self] result in
-            self?.onMoviesLoadSuccess(result)
+            self?.onMoviesLoad(result)
         }
     }
     
-    private func onMoviesLoadSuccess(_ result: MoviesDataLoader.LoadResult) {
+    private func onMoviesLoad(_ result: MoviesDataLoader.LoadResult) {
         guard Thread.isMainThread else {
             DispatchQueue.main.async { [weak self] in
-                self?.onMoviesLoadSuccess(result)
+                self?.onMoviesLoad(result)
             }
             return
         }
@@ -229,21 +229,31 @@ extension MoviesListViewController: MovieCellControllerDelegate {
     func didRequestImage(for controller: MovieCellController) {
         guard let indexPath = indexPath(for: controller) else { return }
         controller.displayLoading(true)
-        let task = imageDataLoader.loadImageData(from: controller.model.posterImageURL, completion: { [weak controller] result in
-            controller?.displayLoading(false)
-            do {
-                let data = try result.get()
-                if let image = UIImage(data: data) {
-                    controller?.displayImage(image)
-                    controller?.displayError(nil)
-                } else {
-                    controller?.displayError("Invalid image")
-                }
-            } catch {
-                controller?.displayError("Failure to load image")
-            }
+        let task = imageDataLoader.loadImageData(from: controller.model.posterImageURL, completion: { [weak controller, weak self] result in
+            self?.onImageLoad(controller: controller, result: result)
         })
         loadingTasks[indexPath] = task
+    }
+    
+    private func onImageLoad(controller: MovieCellController?, result: MovieImageDataLoader.LoadResult) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.onImageLoad(controller: controller, result: result)
+            }
+            return
+        }
+        controller?.displayLoading(false)
+        do {
+            let data = try result.get()
+            if let image = UIImage(data: data) {
+                controller?.displayImage(image)
+                controller?.displayError(nil)
+            } else {
+                controller?.displayError("Invalid image")
+            }
+        } catch {
+            controller?.displayError("Failure to load image")
+        }
     }
     
     func didCancelImageRequest(for controller: MovieCellController) {
