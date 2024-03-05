@@ -9,6 +9,10 @@ import UIKit
 
 final class MoviesListViewController: UITableViewController {
     
+    enum Constants {
+        static let shimmeringCellsCount = 3
+    }
+    
     lazy var searchBar = UISearchBar()
     
     @IBOutlet private(set) weak var errorView: ErrorView?
@@ -91,7 +95,7 @@ extension MoviesListViewController: UISearchBarDelegate {
 extension MoviesListViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        isLoading ? 3 : tableModel.count
+        isLoading ? Constants.shimmeringCellsCount : tableModel.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

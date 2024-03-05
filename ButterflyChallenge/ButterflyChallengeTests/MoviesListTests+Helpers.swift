@@ -142,7 +142,7 @@ extension MoviesListViewController {
         return 0
     }
     
-    var numberOfShimmeringCells: Int { 3 }
+    var numberOfShimmeringCells: Int { Constants.shimmeringCellsCount }
     
     var errorMessage: String? {
         errorView?.message
