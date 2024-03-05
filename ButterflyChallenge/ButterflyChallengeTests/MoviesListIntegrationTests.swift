@@ -104,13 +104,13 @@ final class MoviesListIntegrationTests: XCTestCase {
         let (sut, loader) = makeSUT()
         
         sut.simulateAppearence()
-        XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to not show loading when view is loaded")
+        assertThatSUTIsNotRenderingShimmeringCells(sut)
         
         sut.simulateSearchForText("A movie")
-        XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to show loading when searching for a movie")
+        assertThatSUTIsRenderingShimmeringCells(sut)
         
         loader.completeMoviesListLoading()
-        XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading when movies list has completed loading")
+        assertThatSUTIsNotRenderingShimmeringCells(sut)
     }
     
     func test_loadMoviesCompletion_rendersSuccessfullyLoadedMovies() {
@@ -123,7 +123,7 @@ final class MoviesListIntegrationTests: XCTestCase {
         assertThat(sut, isRendering: [])
         
         sut.simulateSearchForText("A movie")
-        assertThat(sut, isRendering: [])
+        assertThatSUTIsRenderingShimmeringCells(sut)
         
         loader.completeMoviesListLoading(with: [movie0], at: 0)
         assertThat(sut, isRendering: [movie0])
@@ -412,8 +412,8 @@ final class MoviesListIntegrationTests: XCTestCase {
     ) {
         sut.view.enforceLayoutCycle()
         
-        guard sut.numberOfRenderedMovies() == moviesList.count else {
-            return XCTFail("Expected \(moviesList.count) movies, got \(sut.numberOfRenderedMovies()) instead.", file: file, line: line)
+        guard sut.numberOfRenderedCells() == moviesList.count else {
+            return XCTFail("Expected \(moviesList.count) movies, got \(sut.numberOfRenderedCells()) instead.", file: file, line: line)
         }
         
         moviesList.enumerated().forEach { index, movie in
@@ -422,7 +422,7 @@ final class MoviesListIntegrationTests: XCTestCase {
     }
     
     func assertThat(_ sut: MoviesListViewController, hasViewConfiguredFor movie: Movie, at index: Int, file: StaticString = #file, line: UInt = #line) {
-        let view = sut.movieView(at: index)
+        let view = sut.cell(at: index)
         
         guard let cell = view as? MovieViewCell else {
             return XCTFail("Expected \(MovieViewCell.self) instance, got \(String(describing: view)) instead", file: file, line: line)
@@ -431,6 +431,32 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertEqual(cell.titleText, movie.title, "Expected movie title to be \(String(describing: movie.title)) for movie cell at index (\(index))", file: file, line: line)
         
         XCTAssertEqual(cell.releaseDateText, movie.releaseDate, "Expected release date text to be \(String(describing: movie.releaseDate)) for movie cell at index (\(index)", file: file, line: line)
+    }
+    
+    func assertThatSUTIsRenderingShimmeringCells(_ sut: MoviesListViewController, file: StaticString = #file, line: UInt = #line) {
+        sut.view.enforceLayoutCycle()
+     
+        guard sut.numberOfRenderedCells() == sut.numberOfShimmeringCells else {
+            return XCTFail("Expected \(sut.numberOfShimmeringCells) shimmering cells, got \(sut.numberOfRenderedCells()) instead.", file: file, line: line)
+        }
+        
+        (0 ..< sut.numberOfShimmeringCells).forEach { index in
+            let view = sut.cell(at: index)
+            guard let cell = view as? MovieShimmeringCell else {
+                return XCTFail("Expected \(String(describing: MovieShimmeringCell.self)) at \(index), got \(String(describing: view)) instead", file: file, line: line)
+            }
+            XCTAssertTrue(cell.isShimmeringImage, "Expected to have image container shimmering", file: file, line: line)
+            XCTAssertTrue(cell.isShimmeringTitle, "Expected to have title container shimmering", file: file, line: line)
+            XCTAssertTrue(cell.isShimmeringDate, "Expected to have date container shimmering", file: file, line: line)
+        }
+    }
+    
+    func assertThatSUTIsNotRenderingShimmeringCells(_ sut: MoviesListViewController, file: StaticString = #file, line: UInt = #line) {
+        sut.view.enforceLayoutCycle()
+        
+        guard sut.numberOfRenderedCells() == 0 else {
+            return XCTFail("Expected to have no rendered cell, got \(sut.numberOfRenderedCells()) instead", file: file, line: line)
+        }
     }
     
     private func makeMovie(

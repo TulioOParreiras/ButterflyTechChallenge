@@ -123,6 +123,62 @@
                                     <outlet property="titleLabel" destination="biN-hD-x6A" id="h0V-tF-jn3"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MovieShimmeringCell" rowHeight="231" id="nS5-0h-Yz9" customClass="MovieShimmeringCell" customModule="ButterflyChallenge" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="315" width="393" height="231"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="nS5-0h-Yz9" id="ei1-qv-OCV">
+                                    <rect key="frame" x="0.0" y="0.0" width="393" height="231"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="QnV-jE-GDU">
+                                            <rect key="frame" x="20" y="11" width="353" height="80"/>
+                                            <subviews>
+                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Xxb-nt-Wpv">
+                                                    <rect key="frame" x="0.0" y="0.0" width="53.333333333333336" height="80"/>
+                                                    <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="80" id="s7y-eX-9FI"/>
+                                                        <constraint firstAttribute="width" secondItem="Xxb-nt-Wpv" secondAttribute="height" multiplier="2:3" id="vpc-Wk-vVX"/>
+                                                    </constraints>
+                                                </view>
+                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="0h2-kj-VnM">
+                                                    <rect key="frame" x="65.333333333333343" y="0.0" width="287.66666666666663" height="80"/>
+                                                    <subviews>
+                                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="udb-fG-Ljz">
+                                                            <rect key="frame" x="0.0" y="0.0" width="287.66666666666669" height="36"/>
+                                                            <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="36" id="Cb3-sb-EsI"/>
+                                                            </constraints>
+                                                        </view>
+                                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Oll-bU-g28">
+                                                            <rect key="frame" x="0.0" y="44" width="287.66666666666669" height="36"/>
+                                                            <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="36" id="JH0-ES-I39"/>
+                                                            </constraints>
+                                                        </view>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Xxb-nt-Wpv" firstAttribute="height" secondItem="QnV-jE-GDU" secondAttribute="height" id="LCx-ae-bkq"/>
+                                            </constraints>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="bottomMargin" relation="greaterThanOrEqual" secondItem="QnV-jE-GDU" secondAttribute="bottom" priority="999" id="HIE-RJ-Xh3"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="QnV-jE-GDU" secondAttribute="trailing" id="Mvr-fp-Iqr"/>
+                                        <constraint firstItem="QnV-jE-GDU" firstAttribute="top" secondItem="ei1-qv-OCV" secondAttribute="topMargin" id="WX8-OU-gBM"/>
+                                        <constraint firstItem="QnV-jE-GDU" firstAttribute="leading" secondItem="ei1-qv-OCV" secondAttribute="leadingMargin" id="ZPL-Km-7tz"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="posterImageContainer" destination="Xxb-nt-Wpv" id="sIM-wb-8bQ"/>
+                                    <outlet property="releaseDateView" destination="Oll-bU-g28" id="CVE-Cl-KfC"/>
+                                    <outlet property="titleView" destination="udb-fG-Ljz" id="fcK-ZE-xyF"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="eAI-Su-tyX" id="vtv-Bg-r8m"/>

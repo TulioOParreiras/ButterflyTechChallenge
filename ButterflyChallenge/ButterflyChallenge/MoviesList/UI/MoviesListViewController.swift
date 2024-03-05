@@ -18,6 +18,8 @@ final class MoviesListViewController: UITableViewController {
     private var loadingMoviesTask: DataLoaderTask?
     private var loadingTasks = [IndexPath: DataLoaderTask]()
     
+    var isLoading = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.prefetchDataSource = self
@@ -41,9 +43,10 @@ final class MoviesListViewController: UITableViewController {
     
     @objc func refresh() {
         guard let url = Endpoint.search(matching: searchBar.text ?? "", page: "1").url else { return }
-        refreshControl?.beginRefreshing()
         errorView?.message = nil
         loadingMoviesTask?.cancel()
+        isLoading = true
+        tableView.reloadData()
         loadingMoviesTask = moviesLoader?.loadMoviesData(from: url) { [weak self] result in
             self?.onMoviesLoad(result)
         }
@@ -59,6 +62,7 @@ final class MoviesListViewController: UITableViewController {
         loadingMoviesTask = nil
         loadingControllers = [:]
         loadingTasks = [:]
+        isLoading = false
         do {
             let moviesList = try result.get()
             tableModel = moviesList.map { MovieCellController(model: $0, delegate: WeakRefVirtualProxy(self))}
@@ -146,10 +150,14 @@ extension MoviesListViewController: UISearchBarDelegate {
 extension MoviesListViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        tableModel.count
+        isLoading ? 3 : tableModel.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard !isLoading else {
+            let cell: MovieShimmeringCell = tableView.dequeueReusableCell()
+            return cell
+        }
         return cellController(forRowAt: indexPath).view(in: tableView)
     }
     

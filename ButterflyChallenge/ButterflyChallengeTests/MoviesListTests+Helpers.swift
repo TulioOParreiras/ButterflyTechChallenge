@@ -42,6 +42,12 @@ extension MovieViewCell {
     }
 }
 
+extension MovieShimmeringCell {
+    var isShimmeringImage: Bool { posterImageContainer?.isShimmering == true }
+    var isShimmeringTitle: Bool { titleView?.isShimmering == true }
+    var isShimmeringDate: Bool { releaseDateView?.isShimmering == true }
+}
+
 extension UIButton {
     func simulateTap() {
         simulate(event: .touchUpInside)
@@ -55,7 +61,7 @@ extension MoviesListViewController {
     
     @discardableResult
     func simulateMovieCellVisible(at index: Int) -> MovieViewCell? {
-        return movieView(at: index) as? MovieViewCell
+        return cell(at: index) as? MovieViewCell
     }
     
     @discardableResult
@@ -113,12 +119,12 @@ extension MoviesListViewController {
         refreshControl = fakeRefreshControl
     }
     
-    func numberOfRenderedMovies() -> Int {
+    func numberOfRenderedCells() -> Int {
         return tableView.numberOfRows(inSection: movisListSection)
     }
     
-    func movieView(at row: Int) -> UITableViewCell? {
-        guard numberOfRenderedMovies() > row else {
+    func cell(at row: Int) -> UITableViewCell? {
+        guard numberOfRenderedCells() > row else {
             return nil
         }
         let ds = tableView.dataSource
@@ -129,6 +135,8 @@ extension MoviesListViewController {
     private var movisListSection: Int {
         return 0
     }
+    
+    var numberOfShimmeringCells: Int { 3 }
     
     var errorMessage: String? {
         errorView?.message
