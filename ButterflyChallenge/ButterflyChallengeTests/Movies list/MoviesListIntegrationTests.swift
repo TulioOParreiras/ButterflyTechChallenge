@@ -9,59 +9,6 @@ import XCTest
 
 @testable import ButterflyChallenge
 
-class LoaderSpy: MoviesDataLoader, MovieImageDataLoader {
-    
-    private struct TaskSpy: DataLoaderTask {
-        let cancelCallback: () -> Void
-        func cancel() { cancelCallback() }
-    }
-    
-    // MARK: - MoviesDataLoader
-    
-    var moviesListRequests = [(url: URL, completion: (MoviesDataLoader.LoadResult) -> Void)]()
-    var loadCallCount: Int { moviesListRequests.count }
-    
-    private(set) var cancelledMoviesListURLs = [URL]()
-    
-    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) -> DataLoaderTask {
-        moviesListRequests.append((url, completion))
-        return TaskSpy { [weak self] in self?.cancelledMoviesListURLs.append(url) }
-    }
-    
-    func completeMoviesListLoading(with movies: [Movie] = [], at index: Int = 0) {
-        moviesListRequests[index].completion(.success(movies))
-    }
-    
-    func completeMoviesListLoadingWithError(at index: Int = 0) {
-        let error = NSError(domain: "an error", code: 0)
-        moviesListRequests[index].completion(.failure(error))
-    }
-    
-    // MARK: - MovieImageDataLoader
-    
-    private var imageRequests = [(url: URL, completion: (MovieImageDataLoader.LoadResult) -> Void)]()
-    
-    var loadedImageURLs: [URL] {
-        return imageRequests.map { $0.url }
-    }
-    
-    private(set) var cancelledImageURLs = [URL]()
-    
-    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> DataLoaderTask {
-        imageRequests.append((url, completion))
-        return TaskSpy { [weak self] in self?.cancelledImageURLs.append(url) }
-    }
-    
-    func completeImageLoading(with imageData: Data = Data(), at index: Int = 0) {
-        imageRequests[index].completion(.success(imageData))
-    }
-    
-    func completeImageLoadingWithError(at index: Int = 0) {
-        let error = NSError(domain: "an error", code: 0)
-        imageRequests[index].completion(.failure(error))
-    }
-}
-
 final class MoviesListIntegrationTests: XCTestCase { 
     
     func test_loadMoviesActions_requestLoadMovies() {
@@ -103,7 +50,7 @@ final class MoviesListIntegrationTests: XCTestCase {
     func test_loadingMoviesIndicator_isVisibleWhileLoadingMoviesList() {
         let (sut, loader) = makeSUT()
         
-        sut.simulateAppearence()
+        sut.loadViewIfNeeded()
         assertThatSUTIsNotRenderingShimmeringCells(sut)
         
         sut.simulateSearchForText("A movie")
@@ -435,8 +382,8 @@ final class MoviesListIntegrationTests: XCTestCase {
         onMovieSelection: @escaping (Movie) -> Void = { _ in },
         file: StaticString = #file,
         line: UInt = #line
-    ) -> (sut: MoviesListViewController, loader: LoaderSpy) {
-        let loader = LoaderSpy()
+    ) -> (sut: MoviesListViewController, loader: MoviesListLoaderSpy) {
+        let loader = MoviesListLoaderSpy()
         let sut = MoviesListUIComposer.moviesListComposedWith(
             moviesLoader: loader,
             imagesLoader: loader,
@@ -447,73 +394,4 @@ final class MoviesListIntegrationTests: XCTestCase {
         return (sut, loader)
     }
     
-    private func assertThat(
-        _ sut: MoviesListViewController,
-        isRendering moviesList: [Movie],
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        sut.view.enforceLayoutCycle()
-        
-        guard sut.numberOfRenderedCells() == moviesList.count else {
-            return XCTFail("Expected \(moviesList.count) movies, got \(sut.numberOfRenderedCells()) instead.", file: file, line: line)
-        }
-        
-        moviesList.enumerated().forEach { index, movie in
-            assertThat(sut, hasViewConfiguredFor: movie, at: index, file: file, line: line)
-        }
-    }
-    
-    func assertThat(_ sut: MoviesListViewController, hasViewConfiguredFor movie: Movie, at index: Int, file: StaticString = #file, line: UInt = #line) {
-        let view = sut.cell(at: index)
-        
-        guard let cell = view as? MovieViewCell else {
-            return XCTFail("Expected \(MovieViewCell.self) instance, got \(String(describing: view)) instead", file: file, line: line)
-        }
-        
-        XCTAssertEqual(cell.titleText, movie.title, "Expected movie title to be \(String(describing: movie.title)) for movie cell at index (\(index))", file: file, line: line)
-        
-        XCTAssertEqual(cell.releaseDateText, movie.releaseDate, "Expected release date text to be \(String(describing: movie.releaseDate)) for movie cell at index (\(index)", file: file, line: line)
-    }
-    
-    func assertThatSUTIsRenderingShimmeringCells(_ sut: MoviesListViewController, file: StaticString = #file, line: UInt = #line) {
-        sut.view.enforceLayoutCycle()
-     
-        guard sut.numberOfRenderedCells() == sut.numberOfShimmeringCells else {
-            return XCTFail("Expected \(sut.numberOfShimmeringCells) shimmering cells, got \(sut.numberOfRenderedCells()) instead.", file: file, line: line)
-        }
-        
-        (0 ..< sut.numberOfShimmeringCells).forEach { index in
-            let view = sut.cell(at: index)
-            guard let cell = view as? MovieShimmeringCell else {
-                return XCTFail("Expected \(String(describing: MovieShimmeringCell.self)) at \(index), got \(String(describing: view)) instead", file: file, line: line)
-            }
-            XCTAssertTrue(cell.isShimmeringImage, "Expected to have image container shimmering", file: file, line: line)
-            XCTAssertTrue(cell.isShimmeringTitle, "Expected to have title container shimmering", file: file, line: line)
-            XCTAssertTrue(cell.isShimmeringDate, "Expected to have date container shimmering", file: file, line: line)
-        }
-    }
-    
-    func assertThatSUTIsNotRenderingShimmeringCells(_ sut: MoviesListViewController, file: StaticString = #file, line: UInt = #line) {
-        sut.view.enforceLayoutCycle()
-        
-        guard sut.numberOfRenderedCells() == 0 else {
-            return XCTFail("Expected to have no rendered cell, got \(sut.numberOfRenderedCells()) instead", file: file, line: line)
-        }
-    }
-    
-    private func makeMovie(
-        title: String = "A title",
-        posterImageURL: URL = URL(string: "https://any-url.com")!,
-        releaseDate: String = "Today"
-    ) -> Movie {
-        Movie(id: UUID().uuidString, title: title, posterImageURL: posterImageURL, releaseDate: releaseDate)
-    }
-    
-}
-
-extension Movie: Equatable {
-    public static func == (lhs: Movie, rhs: Movie) -> Bool {
-        lhs.id == rhs.id
-    }
 }

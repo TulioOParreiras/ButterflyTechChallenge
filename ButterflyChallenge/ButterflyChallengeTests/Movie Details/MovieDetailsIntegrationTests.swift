@@ -11,27 +11,6 @@ import ViewInspector
 
 @testable import ButterflyChallenge
 
-class MovieLoaderSpy: MovieDetailsLoader {
-    var requestsCallCount = 0
-    var requestedMovie: Movie?
-    private var movieLoadCompletion: ((LoadResult) -> Void)?
-    
-    func loadMovieData(from movie: Movie, completion: @escaping (LoadResult) -> Void) {
-        movieLoadCompletion = completion
-        requestedMovie = movie
-        requestsCallCount += 1
-    }
-    
-    func completeLoading(with movieDetails: MovieDetails) {
-        movieLoadCompletion?(.success(movieDetails))
-    }
-    
-    func completeLoadingWithFailure() {
-        let error = NSError(domain: "", code: 0)
-        movieLoadCompletion?(.failure(error))
-    }
-}
-
 final class MovieDetailsIntegrationTests: XCTestCase {
 
     func test_viewLoad_requestLoadMovieDetails() {
@@ -107,9 +86,9 @@ final class MovieDetailsIntegrationTests: XCTestCase {
     
     // MARK: - Helpers
     
-    func makeSUT(movie: Movie = .mock) -> (sut: MovieDetailsView, loader: MovieLoaderSpy) {
+    func makeSUT(movie: Movie = .mock) -> (sut: MovieDetailsView, loader: MovieDetailsLoaderSpy) {
         let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
-        let loader = MovieLoaderSpy()
+        let loader = MovieDetailsLoaderSpy()
         let viewModel = MovieDetailsViewModel(movie: movie, movieDetailsLoader: loader)
         let view = MovieDetailsView(viewModel: viewModel)
         return (view, loader)
@@ -135,35 +114,4 @@ final class MovieDetailsIntegrationTests: XCTestCase {
         )
     }
 
-}
-
-import SwiftUI
-
-extension MovieDetailsView {
-    
-    var isShowingLoadingIndicator: Bool {
-        let view = try? inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.loading.rawValue)
-        return view != nil
-    }
-    
-    var isShowingMovieDetails: Bool {
-        let view = try? inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.movieDetails.rawValue)
-        return view != nil
-    }
-    
-    var isShowingFailure: Bool {
-        let view = try? failureView()
-        return view != nil
-    }
-    
-    func simulateRetryAction() throws {
-        let view = try failureView()
-        let button = try view.find(viewWithAccessibilityIdentifier: MovieDetailsFailureView.ViewIdentifiers.button.rawValue).button()
-        try button.tap()
-    }
-    
-    private func failureView() throws -> InspectableView<ViewType.ClassifiedView> {
-        try inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.failureView.rawValue)
-    }
-    
 }
