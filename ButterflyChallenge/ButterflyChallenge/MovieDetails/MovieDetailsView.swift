@@ -42,6 +42,14 @@ final class MovieDetailsViewModel: ObservableObject {
     }
     
     func onViewLoad() {
+        loadMovieDetails()
+    }
+    
+    func onDetailsLoadRetry() {
+        loadMovieDetails()
+    }
+    
+    private func loadMovieDetails() {
         viewState = .loading
         movieDetailsLoader.loadMovieData(from: movie, completion: { [weak self] result in
             do {
@@ -78,7 +86,9 @@ struct MovieDetailsView: View {
         case .loaded(let movie):
             MovieDetailsContentView(movie: movie).accessibilityIdentifier(ViewIdentifiers.movieDetails.rawValue)
         case .failure(let error):
-            MovieDetailsFailureView(error: error).accessibilityIdentifier(ViewIdentifiers.failureView.rawValue)
+            MovieDetailsFailureView {
+                viewModel.onDetailsLoadRetry()
+            }.accessibilityIdentifier(ViewIdentifiers.failureView.rawValue)
         case .empty:
             EmptyView()
         }
@@ -94,10 +104,22 @@ struct MovieDetailsContentView: View {
 }
 
 struct MovieDetailsFailureView: View {
-    let error: Error
+    enum ViewIdentifiers: String {
+        case title = "title-label"
+        case button = "retry-button"
+    }
+    
+    let retryAction: () -> Void
     
     var body: some View {
-        Text("")
+        VStack {
+            Text("Seems something went wrong").accessibilityIdentifier(ViewIdentifiers.title.rawValue)
+            Button {
+                retryAction()
+            } label: {
+                Text("Try again")
+            }.accessibilityIdentifier(ViewIdentifiers.button.rawValue)
+        }
     }
 }
 

@@ -12,12 +12,14 @@ import ViewInspector
 @testable import ButterflyChallenge
 
 class MovieLoaderSpy: MovieDetailsLoader {
+    var requestsCallCount = 0
     var requestedMovie: Movie?
     private var movieLoadCompletion: ((LoadResult) -> Void)?
     
     func loadMovieData(from movie: Movie, completion: @escaping (LoadResult) -> Void) {
         movieLoadCompletion = completion
         requestedMovie = movie
+        requestsCallCount += 1
     }
     
     func completeLoading(with movieDetails: MovieDetails) {
@@ -51,7 +53,7 @@ final class MovieDetailsIntegrationTests: XCTestCase {
         XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading indicator when details are loaded with success")
     }
     
-    func test_loadingMovieIndicator_isNotVisibleAfterDetailsLoadFailure() {
+    func test_loadingMovieIndicator_isVisibleWhileRetryingToLoadMovieDetails() throws {
         let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
         let (sut, loader) = makeSUT(movie: movie)
         XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to not show loading indicator until view appears")
@@ -61,6 +63,9 @@ final class MovieDetailsIntegrationTests: XCTestCase {
         
         loader.completeLoadingWithFailure()
         XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading indicator when receiving a failure on details load")
+        
+        try sut.simulateRetryAction()
+        XCTAssertTrue(sut.isShowingLoadingIndicator, "Expected to show loading indicator when tapping retry button")
     }
     
     func test_loadMovieCompletion_rendersSuccesfullyLoadedMovieDetails() {
@@ -85,6 +90,19 @@ final class MovieDetailsIntegrationTests: XCTestCase {
         
         loader.completeLoadingWithFailure()
         XCTAssertTrue(sut.isShowingFailure, "Expected to show failure view when finish loading details with error")
+    }
+    
+    func test_failureRetryAction_requestAnotherMovieDetailsLoad() throws {
+        let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
+        let (sut, loader) = makeSUT(movie: movie)
+        XCTAssertEqual(loader.requestsCallCount, 0, "Expected to not request movie details until view is visible")
+        
+        ViewHosting.host(view: sut)
+        XCTAssertEqual(loader.requestsCallCount, 1, "Expected to request movie details when view become visible")
+        
+        loader.completeLoadingWithFailure()
+        try sut.simulateRetryAction()
+        XCTAssertEqual(loader.requestsCallCount, 2, "Expected to attemp a new movie details request when tapping failure retry button")
     }
     
     // MARK: - Helpers
@@ -134,8 +152,18 @@ extension MovieDetailsView {
     }
     
     var isShowingFailure: Bool {
-        let view = try? inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.failureView.rawValue)
+        let view = try? failureView()
         return view != nil
+    }
+    
+    func simulateRetryAction() throws {
+        let view = try failureView()
+        let button = try view.find(viewWithAccessibilityIdentifier: MovieDetailsFailureView.ViewIdentifiers.button.rawValue).button()
+        try button.tap()
+    }
+    
+    private func failureView() throws -> InspectableView<ViewType.ClassifiedView> {
+        try inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.failureView.rawValue)
     }
     
 }

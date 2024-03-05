@@ -77,6 +77,7 @@
 		D20DDCE32B96D0F80070015C /* MoviesListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesListViewModel.swift; sourceTree = "<group>"; };
 		D20DDCE62B96D2A50070015C /* MovieDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsView.swift; sourceTree = "<group>"; };
 		D20DDCE82B96DA270070015C /* MovieDetailsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsIntegrationTests.swift; sourceTree = "<group>"; };
+		D212250B2B96F31000C7CDBF /* ButterflyChallenge.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ButterflyChallenge.xctestplan; sourceTree = "<group>"; };
 		D2212E3F2B916839002F9A96 /* ButterflyChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ButterflyChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2212E422B916839002F9A96 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D2212E442B916839002F9A96 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -210,6 +211,7 @@
 		D2212E362B916839002F9A96 = {
 			isa = PBXGroup;
 			children = (
+				D212250B2B96F31000C7CDBF /* ButterflyChallenge.xctestplan */,
 				D2212E412B916839002F9A96 /* ButterflyChallenge */,
 				D2212E582B91683A002F9A96 /* ButterflyChallengeTests */,
 				D2212E622B91683A002F9A96 /* ButterflyChallengeUITests */,
