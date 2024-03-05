@@ -366,6 +366,41 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertNil(view?.renderedPosterImage, "Expected no rendered image when an image load finishes after the view is not visible anymore")
     }
     
+    func test_movieCellSelection_triggerAction() {
+        var selectedMovie: Movie?
+        let (sut, loader) = makeSUT { selectedMovie = $0 }
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        let movie0 = makeMovie(posterImageURL: URL(string: "http://url-0.com")!)
+        let movie1 = makeMovie(posterImageURL: URL(string: "http://url-1.com")!)
+        loader.completeMoviesListLoading(with: [movie0, movie1])
+        
+        sut.simulateCellSelection(at: 0)
+        XCTAssertEqual(selectedMovie, movie0, "Expected selected movie to be \(movie0) when selecting row 0, got \(String(describing: selectedMovie)) instead")
+        
+        sut.simulateCellSelection(at: 1)
+        XCTAssertEqual(selectedMovie, movie1, "Expected selected movie to be \(movie1) when selecting row 1, got \(String(describing: selectedMovie)) instead")
+    }
+    
+    func test_loadingCellSelection_doesNotTriggerAction() {
+        var selectedMovie: Movie?
+        let (sut, loader) = makeSUT { selectedMovie = $0 }
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when not tapping any cell")
+        
+        sut.simulateCellSelection(at: 0)
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when tapping first shimmering cell")
+        
+        sut.simulateCellSelection(at: 1)
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when tapping second shimmering cell")
+        
+        sut.simulateCellSelection(at: 2)
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when tapping third shimmering cell")
+    }
+    
     func test_loadMoviesCompletion_dispatchesFromBackgroundToMainThread() {
         let (sut, loader) = makeSUT()
         sut.loadViewIfNeeded()
@@ -396,9 +431,17 @@ final class MoviesListIntegrationTests: XCTestCase {
     
     // MARK: - Helpers
     
-    func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
+    func makeSUT(
+        onMovieSelection: @escaping (Movie) -> Void = { _ in },
+        file: StaticString = #file,
+        line: UInt = #line
+    ) -> (sut: MoviesListViewController, loader: LoaderSpy) {
         let loader = LoaderSpy()
-        let sut = MoviesListUIComposer.moviesListComposedWith(moviesLoader: loader, imagesLoader: loader)
+        let sut = MoviesListUIComposer.moviesListComposedWith(
+            moviesLoader: loader,
+            imagesLoader: loader,
+            onMovieSelection: onMovieSelection
+        )
         trackForMemoryLeaks(loader, file: file, line: line)
         trackForMemoryLeaks(sut, file: file, line: line)
         return (sut, loader)
@@ -467,4 +510,10 @@ final class MoviesListIntegrationTests: XCTestCase {
         Movie(id: UUID().uuidString, title: title, posterImageURL: posterImageURL, releaseDate: releaseDate)
     }
     
+}
+
+extension Movie: Equatable {
+    public static func == (lhs: Movie, rhs: Movie) -> Bool {
+        lhs.id == rhs.id
+    }
 }

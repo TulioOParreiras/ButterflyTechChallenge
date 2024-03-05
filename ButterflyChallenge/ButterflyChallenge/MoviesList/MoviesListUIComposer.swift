@@ -8,10 +8,15 @@
 import UIKit
 
 final class MoviesListUIComposer {
-    static func moviesListComposedWith(moviesLoader: MoviesDataLoader, imagesLoader: MovieImageDataLoader) -> MoviesListViewController {
+    static func moviesListComposedWith(
+        moviesLoader: MoviesDataLoader,
+        imagesLoader: MovieImageDataLoader,
+        onMovieSelection: @escaping (Movie) -> Void
+    ) -> MoviesListViewController {
         let controller = makeMoviesListController()
         let viewModel = MoviesListViewModel(moviesLoader: moviesLoader, imageDataLoader: imagesLoader)
         controller.viewModel = viewModel
+        controller.onMovieSelection = onMovieSelection
         return controller
     }
     

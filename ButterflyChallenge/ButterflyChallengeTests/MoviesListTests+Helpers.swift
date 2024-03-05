@@ -88,6 +88,12 @@ extension MoviesListViewController {
         let index = IndexPath(row: row, section: movisListSection)
         ds?.tableView?(tableView, cancelPrefetchingForRowsAt: [index])
     }
+
+    func simulateCellSelection(at row: Int) {
+        let delegate = tableView.delegate
+        let index = IndexPath(row: row, section: movisListSection)
+        delegate?.tableView?(tableView, didSelectRowAt: index)
+    }
     
     var isShowingLoadingIndicator: Bool {
         refreshControl!.isRefreshing == true

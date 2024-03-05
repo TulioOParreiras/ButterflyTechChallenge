@@ -35,6 +35,7 @@ final class MoviesListViewController: UITableViewController {
             }
         }
     }
+    var onMovieSelection: ((Movie) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -106,6 +107,14 @@ extension MoviesListViewController {
 // MARK: - UITableViewDelegate
 
 extension MoviesListViewController {
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard 
+            isLoading == false,
+            indexPath.row < tableModel.count
+        else { return }
+        onMovieSelection?(tableModel[indexPath.row].model)
+    }
     
     override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cancelImageLoad(forRowAt: indexPath)

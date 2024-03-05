@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -19,14 +20,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func makeRootViewController() -> UIViewController {
+        let navigationController = UINavigationController()
         let client = URLSessionHTTPClient(session: .shared)
         let moviesLoader = RemoteMoviesDataLoader(client: client)
         let imageDataLoader = RemoteMovieImageDataLoader(client: client)
-        let controller = MoviesListUIComposer.moviesListComposedWith(
+        navigationController.viewControllers = [MoviesListUIComposer.moviesListComposedWith(
             moviesLoader: moviesLoader,
             imagesLoader: imageDataLoader
-        )
-        return UINavigationController(rootViewController: controller)
+        ) { [weak navigationController] movie in
+            let view = MovieDetailsView()
+            let hostingController = UIHostingController(rootView: view)
+            navigationController?.pushViewController(hostingController, animated: true)
+        }]
+        return navigationController
     }
     
 }
