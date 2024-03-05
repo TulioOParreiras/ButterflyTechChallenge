@@ -8,17 +8,33 @@
 import UIKit
 
 final class MoviesListViewController: UITableViewController {
-    var moviesLoader: MoviesDataLoader?
-    var imageDataLoader: MovieImageDataLoader?
+    
     lazy var searchBar = UISearchBar()
+    
     @IBOutlet private(set) weak var errorView: ErrorView?
     
-    var tableModel = [MovieCellController]()
     private var loadingControllers = [IndexPath: MovieCellController]()
-    private var loadingMoviesTask: DataLoaderTask?
-    private var loadingTasks = [IndexPath: DataLoaderTask]()
+    private var tableModel = [MovieCellController]() {
+        didSet { tableView.reloadData()}
+    }
+    private var isLoading = false {
+        didSet { tableView.reloadData()}
+    }
     
-    var isLoading = false
+    var viewModel: MoviesListViewModel? {
+        didSet {
+            viewModel?.onLoadingStateChange = { [weak self] isLoading in
+                self?.isLoading = isLoading
+            }
+            viewModel?.onMoviesListLoad = { [weak self] movies in
+                self?.tableModel = movies
+                self?.tableView.reloadData()
+            }
+            viewModel?.onMoviesListLoadError = { [weak self] errorMessage in
+                self?.errorView?.message = errorMessage
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,35 +58,8 @@ final class MoviesListViewController: UITableViewController {
     }
     
     @objc func refresh() {
-        guard let url = Endpoint.search(matching: searchBar.text ?? "", page: "1").url else { return }
-        errorView?.message = nil
-        loadingMoviesTask?.cancel()
-        isLoading = true
-        tableView.reloadData()
-        loadingMoviesTask = moviesLoader?.loadMoviesData(from: url) { [weak self] result in
-            self?.onMoviesLoad(result)
-        }
-    }
-    
-    private func onMoviesLoad(_ result: MoviesDataLoader.LoadResult) {
-        guard Thread.isMainThread else {
-            DispatchQueue.main.async { [weak self] in
-                self?.onMoviesLoad(result)
-            }
-            return
-        }
-        loadingMoviesTask = nil
-        loadingControllers = [:]
-        loadingTasks = [:]
-        isLoading = false
-        do {
-            let moviesList = try result.get()
-            tableModel = moviesList.map { MovieCellController(model: $0, delegate: WeakRefVirtualProxy(self))}
-        } catch {
-            errorView?.message = "Couldn't connect to server"
-        }
-        refreshControl?.endRefreshing()
-        tableView.reloadData()
+        guard let searchText = searchBar.text else { return }
+        viewModel?.searchMovie(searchText)
     }
     
     private func cellController(forRowAt indexPath: IndexPath) -> MovieCellController {
@@ -83,66 +72,17 @@ final class MoviesListViewController: UITableViewController {
         loadingControllers[indexPath]?.cancelLoad()
         loadingControllers[indexPath] = nil
     }
-}
-
-// MARK: - MovieCellControllerDelegate
-
-extension MoviesListViewController: MovieCellControllerDelegate {
-    fileprivate func indexPath(for controller: MovieCellController) -> IndexPath? {
-        loadingControllers.first(where: { $0.value.model.id == controller.model.id })?.key
-    }
     
-    func didRequestImage(for controller: MovieCellController) {
-        guard 
-            let indexPath = indexPath(for: controller),
-            let url = controller.model.posterImageURL
-        else {
-            let image = UIImage(systemName: "photo")
-            controller.displayImage(image)
-            return
-        }
-        controller.displayLoading(true)
-        let task = imageDataLoader?.loadImageData(from: url, completion: { [weak controller, weak self] result in
-            self?.onImageLoad(controller: controller, result: result)
-        })
-        loadingTasks[indexPath] = task
-    }
-    
-    private func onImageLoad(controller: MovieCellController?, result: MovieImageDataLoader.LoadResult) {
-        guard Thread.isMainThread else {
-            DispatchQueue.main.async { [weak self] in
-                self?.onImageLoad(controller: controller, result: result)
-            }
-            return
-        }
-        controller?.displayLoading(false)
-        do {
-            let data = try result.get()
-            if let image = UIImage(data: data) {
-                controller?.displayImage(image)
-                controller?.displayError(nil)
-            } else {
-                controller?.displayError("Invalid image")
-            }
-        } catch {
-            controller?.displayError("Failure to load image")
-        }
-    }
-    
-    func didCancelImageRequest(for controller: MovieCellController) {
-        guard let indexPath = indexPath(for: controller) else { return }
-        controller.displayLoading(false)
-        loadingTasks[indexPath]?.cancel()
-        loadingTasks[indexPath] = nil
-    }
 }
 
 // MARK: - UISearchBarDelegate
 
 extension MoviesListViewController: UISearchBarDelegate {
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         refresh()
     }
+    
 }
 
 // MARK: - UITableViewDataSource

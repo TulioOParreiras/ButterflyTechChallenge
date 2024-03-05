@@ -12,9 +12,10 @@ protocol MovieCellControllerDelegate {
     func didCancelImageRequest(for controller: MovieCellController)
 }
 
-final class MovieCellController {
+final class MovieCellController: Identifiable, Hashable, Equatable {
     typealias ResourceViewModel = UIImage
     
+    let id = UUID()
     let model: Movie
     let delegate: MovieCellControllerDelegate
     
@@ -59,5 +60,13 @@ final class MovieCellController {
 
     private func releaseCellForReuse() {
         cell = nil
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: MovieCellController, rhs: MovieCellController) -> Bool {
+        lhs.id == rhs.id
     }
 }

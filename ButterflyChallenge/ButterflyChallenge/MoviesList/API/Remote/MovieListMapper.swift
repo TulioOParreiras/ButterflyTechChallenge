@@ -25,14 +25,6 @@ final class MovieDateFormatter {
 }
 
 final class MovieListMapper {
-    static let decoder: JSONDecoder = {
-        let decoder = JSONDecoder()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        decoder.dateDecodingStrategy = .formatted(formatter)
-        return decoder
-    }()
-    
     private struct Root: Decodable {
         
         private let results: [RemoteMovie]
@@ -42,19 +34,23 @@ final class MovieListMapper {
             let title: String
             let poster_path: String?
             let release_date: String
+            
+            var toMovie: Movie {
+                var posterImageURL: URL?
+                if let poster_path {
+                    posterImageURL = URL(string: "https://image.tmdb.org/t/p/w154\(poster_path)")
+                }
+                return Movie(
+                    id: String(describing: id),
+                    title: title,
+                    posterImageURL: posterImageURL,
+                    releaseDate: MovieDateFormatter.getYear(from: release_date)
+                )
+            }
         }
 
         var images: [Movie] {
-            results.map {
-                let posterURL = $0.poster_path == nil ? nil : URL(string: "https://image.tmdb.org/t/p/w154\($0.poster_path!)")!
-                let releaseDate = MovieDateFormatter.getYear(from: $0.release_date)
-                return Movie(
-                    id: String(describing: $0.id),
-                    title: $0.title,
-                    posterImageURL: posterURL,
-                    releaseDate: releaseDate
-                )
-            }
+            results.map { $0.toMovie }
         }
     }
     

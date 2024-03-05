@@ -24,6 +24,7 @@
 		D20DDCDD2B96A8B60070015C /* MoviesListUIComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20DDCDC2B96A8B60070015C /* MoviesListUIComposer.swift */; };
 		D20DDCDF2B96A8C80070015C /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20DDCDE2B96A8C80070015C /* Endpoint.swift */; };
 		D20DDCE12B96AF010070015C /* MovieShimmeringCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20DDCE02B96AF000070015C /* MovieShimmeringCell.swift */; };
+		D20DDCE42B96D0F80070015C /* MoviesListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20DDCE32B96D0F80070015C /* MoviesListViewModel.swift */; };
 		D2212E432B916839002F9A96 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E422B916839002F9A96 /* AppDelegate.swift */; };
 		D2212E452B916839002F9A96 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E442B916839002F9A96 /* SceneDelegate.swift */; };
 		D2212E472B916839002F9A96 /* MoviesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E462B916839002F9A96 /* MoviesListViewController.swift */; };
@@ -70,6 +71,7 @@
 		D20DDCDC2B96A8B60070015C /* MoviesListUIComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesListUIComposer.swift; sourceTree = "<group>"; };
 		D20DDCDE2B96A8C80070015C /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		D20DDCE02B96AF000070015C /* MovieShimmeringCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieShimmeringCell.swift; sourceTree = "<group>"; };
+		D20DDCE32B96D0F80070015C /* MoviesListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesListViewModel.swift; sourceTree = "<group>"; };
 		D2212E3F2B916839002F9A96 /* ButterflyChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ButterflyChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2212E422B916839002F9A96 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D2212E442B916839002F9A96 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 		D20DDCBA2B96A7050070015C /* MoviesList */ = {
 			isa = PBXGroup;
 			children = (
+				D20DDCE22B96D0F20070015C /* Presentation */,
 				D20DDCC72B96A7710070015C /* API */,
 				D20DDCC42B96A75B0070015C /* Model */,
 				D20DDCBF2B96A73A0070015C /* UI */,
@@ -173,6 +176,14 @@
 				D20DDCDE2B96A8C80070015C /* Endpoint.swift */,
 			);
 			path = Remote;
+			sourceTree = "<group>";
+		};
+		D20DDCE22B96D0F20070015C /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				D20DDCE32B96D0F80070015C /* MoviesListViewModel.swift */,
+			);
+			path = Presentation;
 			sourceTree = "<group>";
 		};
 		D2212E362B916839002F9A96 = {
@@ -375,6 +386,7 @@
 				D20DDCD62B96A86B0070015C /* RemoteMoviesDataLoader.swift in Sources */,
 				D20DDCCE2B96A7C10070015C /* UITableView+CellDequeue.swift in Sources */,
 				D20DDCBE2B96A72E0070015C /* MovieCellController.swift in Sources */,
+				D20DDCE42B96D0F80070015C /* MoviesListViewModel.swift in Sources */,
 				D20DDCC62B96A7680070015C /* Movie.swift in Sources */,
 				D20DDCC32B96A7530070015C /* MovieViewCell.swift in Sources */,
 			);

@@ -8,7 +8,7 @@
 import Foundation
 
 final class RemoteMoviesDataLoader: MoviesDataLoader {
-    let client: HTTPClient
+    private let client: HTTPClient
     
     init(client: HTTPClient) {
         self.client = client
