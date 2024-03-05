@@ -32,7 +32,7 @@ class MovieLoaderSpy: MovieDetailsLoader {
 
 final class MovieDetailsIntegrationTests: XCTestCase {
 
-    func test_viewLoad_requestLoadMovieDetails() throws {
+    func test_viewLoad_requestLoadMovieDetails() {
         let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
         let (sut, loader) = makeSUT(movie: movie)
         ViewHosting.host(view: sut)
@@ -75,6 +75,18 @@ final class MovieDetailsIntegrationTests: XCTestCase {
         XCTAssertTrue(sut.isShowingMovieDetails, "Expected to show movie details when details are loaded with success")
     }
     
+    func test_loadMovieCompletion_rendersFailureViewOnError() {
+        let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
+        let (sut, loader) = makeSUT(movie: movie)
+        XCTAssertFalse(sut.isShowingFailure, "Expected to not show failure view when view is created")
+        
+        ViewHosting.host(view: sut)
+        XCTAssertFalse(sut.isShowingFailure, "Expected to not show failure view when loading movie details")
+        
+        loader.completeLoadingWithFailure()
+        XCTAssertTrue(sut.isShowingFailure, "Expected to show failure view when finish loading details with error")
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(movie: Movie = .mock) -> (sut: MovieDetailsView, loader: MovieLoaderSpy) {
@@ -107,6 +119,8 @@ final class MovieDetailsIntegrationTests: XCTestCase {
 
 }
 
+import SwiftUI
+
 extension MovieDetailsView {
     
     var isShowingLoadingIndicator: Bool {
@@ -116,6 +130,11 @@ extension MovieDetailsView {
     
     var isShowingMovieDetails: Bool {
         let view = try? inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.movieDetails.rawValue)
+        return view != nil
+    }
+    
+    var isShowingFailure: Bool {
+        let view = try? inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.failureView.rawValue)
         return view != nil
     }
     

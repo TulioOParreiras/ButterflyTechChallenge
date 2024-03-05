@@ -58,6 +58,7 @@ struct MovieDetailsView: View {
     enum ViewIdentifiers: String {
         case loading = "loading-indicator"
         case movieDetails = "movie-details-view"
+        case failureView = "failure-view"
     }
     
     @ObservedObject var viewModel: MovieDetailsViewModel
@@ -77,7 +78,7 @@ struct MovieDetailsView: View {
         case .loaded(let movie):
             MovieDetailsContentView(movie: movie).accessibilityIdentifier(ViewIdentifiers.movieDetails.rawValue)
         case .failure(let error):
-            EmptyView()
+            MovieDetailsFailureView(error: error).accessibilityIdentifier(ViewIdentifiers.failureView.rawValue)
         case .empty:
             EmptyView()
         }
@@ -86,6 +87,14 @@ struct MovieDetailsView: View {
 
 struct MovieDetailsContentView: View {
     let movie: MovieDetails
+    
+    var body: some View {
+        Text("")
+    }
+}
+
+struct MovieDetailsFailureView: View {
+    let error: Error
     
     var body: some View {
         Text("")
