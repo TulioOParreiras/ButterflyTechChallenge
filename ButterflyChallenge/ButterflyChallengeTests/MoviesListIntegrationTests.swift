@@ -385,7 +385,7 @@ final class MoviesListIntegrationTests: XCTestCase {
     
     func test_loadingCellSelection_doesNotTriggerAction() {
         var selectedMovie: Movie?
-        let (sut, loader) = makeSUT { selectedMovie = $0 }
+        let (sut, _) = makeSUT { selectedMovie = $0 }
         
         sut.loadViewIfNeeded()
         sut.simulateSearchForText("A")
