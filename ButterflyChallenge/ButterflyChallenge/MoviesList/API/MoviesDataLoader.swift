@@ -12,13 +12,13 @@ public protocol DataLoaderTask {
 }
 
 public protocol MovieImageDataLoader {
-    typealias LoadResult = Swift.Result<Data, Error>
+    typealias LoadResult = Result<Data, Error>
     
     func loadImageData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask
 }
 
 protocol MoviesDataLoader {
-    typealias LoadResult = Swift.Result<[Movie], Error>
+    typealias LoadResult = Result<[Movie], Error>
     
     func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask
 }

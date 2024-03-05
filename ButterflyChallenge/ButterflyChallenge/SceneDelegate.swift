@@ -8,6 +8,12 @@
 import UIKit
 import SwiftUI
 
+class MovieLoader: MovieDetailsLoader {
+    func loadMovieData(from movie: Movie, completion: @escaping (LoadResult) -> Void) {
+        
+    }
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -28,7 +34,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             moviesLoader: moviesLoader,
             imagesLoader: imageDataLoader
         ) { [weak navigationController] movie in
-            let view = MovieDetailsView()
+            let movieLoader = MovieLoader()
+            let view = MovieDetailsView(viewModel: MovieDetailsViewModel(movie: movie, movieDetailsLoader: movieLoader))
             let hostingController = UIHostingController(rootView: view)
             navigationController?.pushViewController(hostingController, animated: true)
         }]
