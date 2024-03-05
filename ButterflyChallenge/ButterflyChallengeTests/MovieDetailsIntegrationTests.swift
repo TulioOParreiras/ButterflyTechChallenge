@@ -63,6 +63,18 @@ final class MovieDetailsIntegrationTests: XCTestCase {
         XCTAssertFalse(sut.isShowingLoadingIndicator, "Expected to hide loading indicator when receiving a failure on details load")
     }
     
+    func test_loadMovieCompletion_rendersSuccesfullyLoadedMovieDetails() {
+        let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
+        let (sut, loader) = makeSUT(movie: movie)
+        XCTAssertFalse(sut.isShowingMovieDetails, "Expected to not show movie details until view appears and finish loading details")
+        
+        ViewHosting.host(view: sut)
+        XCTAssertFalse(sut.isShowingMovieDetails, "Expected to not show movie details until finish loading details")
+        
+        loader.completeLoading(with: makeMovieDetails())
+        XCTAssertTrue(sut.isShowingMovieDetails, "Expected to show movie details when details are loaded with success")
+    }
+    
     // MARK: - Helpers
     
     func makeSUT(movie: Movie = .mock) -> (sut: MovieDetailsView, loader: MovieLoaderSpy) {
@@ -99,6 +111,11 @@ extension MovieDetailsView {
     
     var isShowingLoadingIndicator: Bool {
         let view = try? inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.loading.rawValue)
+        return view != nil
+    }
+    
+    var isShowingMovieDetails: Bool {
+        let view = try? inspect().find(viewWithAccessibilityIdentifier: MovieDetailsView.ViewIdentifiers.movieDetails.rawValue)
         return view != nil
     }
     

@@ -57,6 +57,7 @@ final class MovieDetailsViewModel: ObservableObject {
 struct MovieDetailsView: View {
     enum ViewIdentifiers: String {
         case loading = "loading-indicator"
+        case movieDetails = "movie-details-view"
     }
     
     @ObservedObject var viewModel: MovieDetailsViewModel
@@ -74,12 +75,20 @@ struct MovieDetailsView: View {
         case .loading:
             ProgressView().accessibilityIdentifier(ViewIdentifiers.loading.rawValue)
         case .loaded(let movie):
-            EmptyView()
+            MovieDetailsContentView(movie: movie).accessibilityIdentifier(ViewIdentifiers.movieDetails.rawValue)
         case .failure(let error):
             EmptyView()
         case .empty:
             EmptyView()
         }
+    }
+}
+
+struct MovieDetailsContentView: View {
+    let movie: MovieDetails
+    
+    var body: some View {
+        Text("")
     }
 }
 
