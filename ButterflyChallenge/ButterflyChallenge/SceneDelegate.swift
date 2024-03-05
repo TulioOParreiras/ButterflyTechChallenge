@@ -7,98 +7,26 @@
 
 import UIKit
 
-class Mock: MoviesDataLoader, MovieImageDataLoader {
-    
-    private struct TaskSpy: DataLoaderTask {
-        let cancelCallback: () -> Void
-        func cancel() { cancelCallback() }
-    }
-    
-    // MARK: - MoviesDataLoader
-    
-    var moviesListRequests = [(url: URL, completion: (MoviesDataLoader.LoadResult) -> Void)]()
-    var loadCallCount: Int { moviesListRequests.count }
-    
-    private(set) var cancelledMoviesListURLs = [URL]()
-    
-    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) -> DataLoaderTask {
-        moviesListRequests.append((url, completion))
-        return TaskSpy { [weak self] in self?.cancelledMoviesListURLs.append(url) }
-    }
-    
-    func completeMoviesListLoading(with movies: [Movie] = [], at index: Int = 0) {
-        moviesListRequests[index].completion(.success(movies))
-    }
-    
-    func completeMoviesListLoadingWithError(at index: Int = 0) {
-        let error = NSError(domain: "an error", code: 0)
-        moviesListRequests[index].completion(.failure(error))
-    }
-    
-    // MARK: - MovieImageDataLoader
-    
-    private var imageRequests = [(url: URL, completion: (MovieImageDataLoader.LoadResult) -> Void)]()
-    
-    var loadedImageURLs: [URL] {
-        return imageRequests.map { $0.url }
-    }
-    
-    private(set) var cancelledImageURLs = [URL]()
-    
-    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> DataLoaderTask {
-        imageRequests.append((url, completion))
-        return TaskSpy { [weak self] in self?.cancelledImageURLs.append(url) }
-    }
-    
-    func completeImageLoading(with imageData: Data = Data(), at index: Int = 0) {
-        imageRequests[index].completion(.success(imageData))
-    }
-    
-    func completeImageLoadingWithError(at index: Int = 0) {
-        let error = NSError(domain: "an error", code: 0)
-        imageRequests[index].completion(.failure(error))
-    }
-}
-
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        let loader = Mock()
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = MoviesListViewController(moviesLoader: loader, imageDataLoader: loader)
+        window?.rootViewController = makeRootViewController()
         window?.makeKeyAndVisible()
     }
-
-    func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-        // This occurs shortly after the scene enters the background, or when its session is discarded.
-        // Release any resources associated with this scene that can be re-created the next time the scene connects.
-        // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
+    
+    private func makeRootViewController() -> UIViewController {
+        let client = URLSessionHTTPClient(session: .shared)
+        let moviesLoader = RemoteMoviesDataLoader(client: client)
+        let imageDataLoader = RemoteMovieImageDataLoader(client: client)
+        let controller = MoviesListUIComposer.moviesListComposedWith(
+            moviesLoader: moviesLoader,
+            imagesLoader: imageDataLoader
+        )
+        return UINavigationController(rootViewController: controller)
     }
-
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-    }
-
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
-        // This may occur due to temporary interruptions (ex. an incoming phone call).
-    }
-
-    func sceneWillEnterForeground(_ scene: UIScene) {
-        // Called as the scene transitions from the background to the foreground.
-        // Use this method to undo the changes made on entering the background.
-    }
-
-    func sceneDidEnterBackground(_ scene: UIScene) {
-        // Called as the scene transitions from the foreground to the background.
-        // Use this method to save data, release shared resources, and store enough scene-specific state information
-        // to restore the scene back to its current state.
-    }
-
+    
 }

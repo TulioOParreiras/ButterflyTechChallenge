@@ -398,7 +398,7 @@ final class MoviesListIntegrationTests: XCTestCase {
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
         let loader = LoaderSpy()
-        let sut = MoviesListViewController(moviesLoader: loader, imageDataLoader: loader)
+        let sut = MoviesListUIComposer.moviesListComposedWith(moviesLoader: loader, imagesLoader: loader)
         trackForMemoryLeaks(loader, file: file, line: line)
         trackForMemoryLeaks(sut, file: file, line: line)
         return (sut, loader)

@@ -31,14 +31,14 @@ private class FakeRefreshControl: UIRefreshControl {
 }
 
 extension MovieViewCell {
-    var titleText: String? { titleLabel.text }
-    var releaseDateText: String? { releaseDateLabel.text }
-    var renderedPosterImage: Data? { posterImageView.image?.pngData() }
-    var isShowingImageLoadingIndicator: Bool { return posterImageContainer.isShimmering }
-    var isShowingRetryAction: Bool { posterImageRetryButton.isHidden == false }
+    var titleText: String? { titleLabel?.text }
+    var releaseDateText: String? { releaseDateLabel?.text }
+    var renderedPosterImage: Data? { posterImageView?.image?.pngData() }
+    var isShowingImageLoadingIndicator: Bool { return posterImageContainer?.isShimmering == true }
+    var isShowingRetryAction: Bool { posterImageRetryButton?.isHidden == false }
     
     func simulateRetryAction() {
-        posterImageRetryButton.simulateTap()
+        posterImageRetryButton?.simulateTap()
     }
 }
 
@@ -131,7 +131,7 @@ extension MoviesListViewController {
     }
     
     var errorMessage: String? {
-        errorView.message
+        errorView?.message
     }
     
 }
