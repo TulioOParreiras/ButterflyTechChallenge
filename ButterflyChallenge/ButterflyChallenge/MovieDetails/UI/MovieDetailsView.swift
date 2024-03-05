@@ -29,8 +29,15 @@ struct MovieDetailsView: View {
         case .loading:
             ProgressView().accessibilityIdentifier(ViewIdentifiers.loading.rawValue)
         case .loaded(let movie):
-            MovieDetailsContentView(movie: movie).accessibilityIdentifier(ViewIdentifiers.movieDetails.rawValue)
-        case .failure(let error):
+            MovieDetailsContentView(
+                viewModel: MovieDetailsContentViewModel(
+                    movieDetails: movie,
+                    imageLoader: RemoteMovieImageDataLoader(
+                        client: URLSessionHTTPClient(session: .shared)
+                    )
+                )
+            ).accessibilityIdentifier(ViewIdentifiers.movieDetails.rawValue)
+        case .failure:
             MovieDetailsFailureView {
                 viewModel.onDetailsLoadRetry()
             }.accessibilityIdentifier(ViewIdentifiers.failureView.rawValue)
