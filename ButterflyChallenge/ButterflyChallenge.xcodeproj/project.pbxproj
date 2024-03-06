@@ -54,6 +54,11 @@
 		D21225432B97F36500C7CDBF /* MovieDetailsContentView+PreviewHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21225422B97F36500C7CDBF /* MovieDetailsContentView+PreviewHelpers.swift */; };
 		D21225452B97F85100C7CDBF /* MovieDetailsContentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21225442B97F85100C7CDBF /* MovieDetailsContentIntegrationTests.swift */; };
 		D21225472B98103900C7CDBF /* ImageURLBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21225462B98103900C7CDBF /* ImageURLBuilderTests.swift */; };
+		D21225492B9810BA00C7CDBF /* MovieListMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21225482B9810BA00C7CDBF /* MovieListMapperTests.swift */; };
+		D212254B2B98224B00C7CDBF /* HTTPClientTaskWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D212254A2B98224B00C7CDBF /* HTTPClientTaskWrapper.swift */; };
+		D212254D2B98229A00C7CDBF /* DurationFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D212254C2B98229A00C7CDBF /* DurationFormatterTests.swift */; };
+		D212254F2B9823B800C7CDBF /* URLSessionHTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D212254E2B9823B800C7CDBF /* URLSessionHTTPClientTests.swift */; };
+		D21225522B9823E400C7CDBF /* URLProtocolStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21225512B9823E400C7CDBF /* URLProtocolStub.swift */; };
 		D2212E432B916839002F9A96 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E422B916839002F9A96 /* AppDelegate.swift */; };
 		D2212E452B916839002F9A96 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E442B916839002F9A96 /* SceneDelegate.swift */; };
 		D2212E472B916839002F9A96 /* MoviesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E462B916839002F9A96 /* MoviesListViewController.swift */; };
@@ -130,6 +135,11 @@
 		D21225422B97F36500C7CDBF /* MovieDetailsContentView+PreviewHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MovieDetailsContentView+PreviewHelpers.swift"; sourceTree = "<group>"; };
 		D21225442B97F85100C7CDBF /* MovieDetailsContentIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsContentIntegrationTests.swift; sourceTree = "<group>"; };
 		D21225462B98103900C7CDBF /* ImageURLBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageURLBuilderTests.swift; sourceTree = "<group>"; };
+		D21225482B9810BA00C7CDBF /* MovieListMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieListMapperTests.swift; sourceTree = "<group>"; };
+		D212254A2B98224B00C7CDBF /* HTTPClientTaskWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientTaskWrapper.swift; sourceTree = "<group>"; };
+		D212254C2B98229A00C7CDBF /* DurationFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DurationFormatterTests.swift; sourceTree = "<group>"; };
+		D212254E2B9823B800C7CDBF /* URLSessionHTTPClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionHTTPClientTests.swift; sourceTree = "<group>"; };
+		D21225512B9823E400C7CDBF /* URLProtocolStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLProtocolStub.swift; sourceTree = "<group>"; };
 		D2212E3F2B916839002F9A96 /* ButterflyChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ButterflyChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2212E422B916839002F9A96 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D2212E442B916839002F9A96 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -234,6 +244,7 @@
 				D20DDCDA2B96A89B0070015C /* MovieListMapper.swift */,
 				D20DDCDE2B96A8C80070015C /* Endpoint.swift */,
 				D212253E2B97F20800C7CDBF /* ImageURLBuilder.swift */,
+				D212254A2B98224B00C7CDBF /* HTTPClientTaskWrapper.swift */,
 			);
 			path = Remote;
 			sourceTree = "<group>";
@@ -350,6 +361,14 @@
 			path = Remote;
 			sourceTree = "<group>";
 		};
+		D21225502B9823DC00C7CDBF /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				D21225512B9823E400C7CDBF /* URLProtocolStub.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		D2212E362B916839002F9A96 = {
 			isa = PBXGroup;
 			children = (
@@ -390,9 +409,13 @@
 		D2212E582B91683A002F9A96 /* ButterflyChallengeTests */ = {
 			isa = PBXGroup;
 			children = (
+				D21225502B9823DC00C7CDBF /* Helpers */,
 				D212250D2B97C89500C7CDBF /* Movies list */,
 				D212250C2B97C88E00C7CDBF /* Movie Details */,
 				D21225462B98103900C7CDBF /* ImageURLBuilderTests.swift */,
+				D21225482B9810BA00C7CDBF /* MovieListMapperTests.swift */,
+				D212254C2B98229A00C7CDBF /* DurationFormatterTests.swift */,
+				D212254E2B9823B800C7CDBF /* URLSessionHTTPClientTests.swift */,
 			);
 			path = ButterflyChallengeTests;
 			sourceTree = "<group>";
@@ -546,6 +569,7 @@
 			files = (
 				D212252E2B97CB5700C7CDBF /* MovieDetailsViewModel.swift in Sources */,
 				D20DDCDB2B96A89B0070015C /* MovieListMapper.swift in Sources */,
+				D212254B2B98224B00C7CDBF /* HTTPClientTaskWrapper.swift in Sources */,
 				D20DDCCC2B96A7B20070015C /* UIImageView+SetImageAnimated.swift in Sources */,
 				D21225292B97CB2F00C7CDBF /* MovieDetailsContentView.swift in Sources */,
 				D20DDCE72B96D2A50070015C /* MovieDetailsView.swift in Sources */,
@@ -586,10 +610,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				D21225132B97C91C00C7CDBF /* MoviesListLoaderSpy.swift in Sources */,
+				D21225522B9823E400C7CDBF /* URLProtocolStub.swift in Sources */,
+				D21225492B9810BA00C7CDBF /* MovieListMapperTests.swift in Sources */,
 				D21225262B97CAD400C7CDBF /* MoviesListIntegrationTests+TestHelpers.swift in Sources */,
 				D21225162B97CA1100C7CDBF /* MovieViewCell+TestExtensions.swift in Sources */,
 				D212250F2B97C8C400C7CDBF /* MovieDetailsView+TestExtensions.swift in Sources */,
+				D212254D2B98229A00C7CDBF /* DurationFormatterTests.swift in Sources */,
 				D212251E2B97CA6A00C7CDBF /* UIRefreshControl+TestExtensions.swift in Sources */,
+				D212254F2B9823B800C7CDBF /* URLSessionHTTPClientTests.swift in Sources */,
 				D2212E742B916DBA002F9A96 /* XCTestCase+TestExtensions.swift in Sources */,
 				D21225242B97CA9B00C7CDBF /* UIImage+TestExtensions.swift in Sources */,
 				D2212E5A2B91683A002F9A96 /* MoviesListIntegrationTests.swift in Sources */,

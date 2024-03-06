@@ -8,7 +8,11 @@
 import Foundation
 
 struct DurationFormatter {
-    let durationInMinutes: Int?
+    private let durationInMinutes: Int?
+    
+    init(durationInMinutes: Int?) {
+        self.durationInMinutes = durationInMinutes
+    }
     
     func formattedDuration(units: NSCalendar.Unit = [.hour, .minute]) -> String? {
         guard let durationInMinutes else { return nil }
