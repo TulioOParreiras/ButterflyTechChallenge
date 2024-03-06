@@ -9,8 +9,21 @@ import Foundation
 
 #if DEBUG
 class MovieDetailsLoaderMock: MovieDetailsLoader {
-    func loadMovieData(from movie: Movie, completion: @escaping (LoadResult) -> Void) {
-        completion(.success(.mock))
+    let result: LoadResult?
+    
+    init(result: LoadResult?) {
+        self.result = result
+    }
+    
+    struct TaskMock: DataLoaderTask {
+        func cancel() { }
+    }
+    
+    func loadMovieData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask {
+        if let result {
+            completion(result)
+        }
+        return TaskMock()
     }
 }
 
@@ -25,7 +38,7 @@ extension MovieDetails {
         MovieDetails(
             id: "1",
             title: "A title",
-            posterImageURL: nil,
+            posterImageURL: URL(string: "https://any-url.com"),
             releaseDate: "A date",
             overview: "An overview",
             originalTitle: "A title",

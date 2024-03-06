@@ -36,14 +36,10 @@ final class MovieListMapper {
             let release_date: String
             
             var toMovie: Movie {
-                var posterImageURL: URL?
-                if let poster_path {
-                    posterImageURL = URL(string: "https://image.tmdb.org/t/p/w154\(poster_path)")
-                }
                 return Movie(
                     id: String(describing: id),
                     title: title,
-                    posterImageURL: posterImageURL,
+                    posterImageURL: ImageURLBuilder(path: poster_path).url,
                     releaseDate: MovieDateFormatter.getYear(from: release_date)
                 )
             }
@@ -54,20 +50,8 @@ final class MovieListMapper {
         }
     }
     
-    enum Error: Swift.Error {
-        case invalidData
-    }
-    
     static func map(_ data: Data, from response: HTTPURLResponse) throws -> [Movie] {
         let root = try JSONDecoder().decode(Root.self, from: data)
         return root.images
-    }
-}
-
-extension HTTPURLResponse {
-    private static var OK_200: Int { return 200 }
-
-    var isOK: Bool {
-        return statusCode == HTTPURLResponse.OK_200
     }
 }

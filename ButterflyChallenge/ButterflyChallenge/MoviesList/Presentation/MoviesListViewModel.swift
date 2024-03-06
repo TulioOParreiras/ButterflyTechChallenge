@@ -77,7 +77,6 @@ extension MoviesListViewModel: MovieCellControllerDelegate {
             }
             self?.onImageLoad(result, controller: controller)
         })
-        
     }
     
     func didCancelImageRequest(for controller: MovieCellController) {

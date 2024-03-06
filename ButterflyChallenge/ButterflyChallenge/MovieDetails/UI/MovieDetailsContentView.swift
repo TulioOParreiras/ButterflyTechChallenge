@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct MovieDetailsContentView: View {
+    enum ViewIdentifiers: String {
+        case loadingIndicator = "image-loading-indicator"
+        case posterImage = "poster-image-view"
+    }
+    
     enum Constants {
         static let viewPadding = CGFloat(16)
         static let contentStackPadding = CGFloat(16)
@@ -28,6 +33,9 @@ struct MovieDetailsContentView: View {
         .padding(Constants.viewPadding)
         .onAppear {
             viewModel.onViewLoad()
+        }
+        .onDisappear {
+            viewModel.onViewDisappear()
         }
     }
     
@@ -50,8 +58,10 @@ struct MovieDetailsContentView: View {
             Text(movieDetails.title)
                 .font(.largeTitle)
             
-            Text(movieDetails.originalTitle)
-                .font(.caption)
+            if let originalTitle = movieDetails.originalTitle {
+                Text(originalTitle)
+                    .font(.caption)
+            }
             
         }
     }
@@ -60,15 +70,17 @@ struct MovieDetailsContentView: View {
         HStack(spacing: Constants.durationStackPadding, content: {
             Text(movieDetails.releaseDate)
             
-            Text("|")
-            
-            Text(movieDetails.duration)
+            if let duration = movieDetails.duration {
+                Text("|")
+                
+                Text(duration)
+            }
         })
         .font(.subheadline)
     }
     
     var overviewStack: some View {
-        HStack(spacing: Constants.overviewStackPadding) {
+        HStack(alignment: .top, spacing: Constants.overviewStackPadding) {
             imageContainer
             
             Text(movieDetails.overview)
@@ -79,6 +91,7 @@ struct MovieDetailsContentView: View {
     var imageContainer: some View {
         ZStack {
             Color.secondary
+                .opacity(0.5)
                 .frame(width: 100, height: 150)
             imageContent
         }
@@ -89,12 +102,10 @@ struct MovieDetailsContentView: View {
         switch viewModel.imageState {
         case .loading:
             ProgressView()
+                .accessibilityIdentifier(ViewIdentifiers.loadingIndicator.rawValue)
         case .loaded(let data):
-            if let image = UIImage(data: data) {
-                Image(uiImage: image)
-            } else {
-                Image(systemName: "photo")
-            }
+            buildImage(from: data)
+                .accessibilityIdentifier(ViewIdentifiers.posterImage.rawValue)
         case .failure:
             Button(action: {
                 viewModel.onImageLoadRetry()
@@ -107,42 +118,16 @@ struct MovieDetailsContentView: View {
             EmptyView()
         }
     }
-}
-
-#if DEBUG
-final class ImageLoaderMock: MovieImageDataLoader {
-    let loadResult: LoadResult?
     
-    init(loadResult: LoadResult?) {
-        self.loadResult = loadResult
-    }
-    
-    struct TaskMock: DataLoaderTask {
-        func cancel() { }
-    }
-    
-    func loadImageData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask {
-        if let loadResult {
-            completion(loadResult)
+    @ViewBuilder
+    private func buildImage(from data: Data) -> some View {
+        if let image = UIImage(data: data) {
+            Image(uiImage: image)
+        } else {
+            Image(systemName: "photo")
         }
-        return TaskMock()
     }
 }
-
-extension MovieDetails {
-    static var duneMovie: MovieDetails {
-        MovieDetails(
-            id: "1",
-            title: "Dune",
-            posterImageURL: URL(string: "https://any-url.com"),
-            releaseDate: "2021",
-            overview: "A noble family becomes embroiled in a war for control over the galaxy's most valuable asset while its heir becomes troubled by visions of a dark future",
-            originalTitle: "Dune: Part One (original title)",
-            duration: "2h 35m"
-        )
-    }
-}
-#endif
 
 #Preview {
     MovieDetailsContentView(

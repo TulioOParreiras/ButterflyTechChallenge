@@ -12,12 +12,13 @@ import ViewInspector
 @testable import ButterflyChallenge
 
 final class MovieDetailsIntegrationTests: XCTestCase {
-
+    
     func test_viewLoad_requestLoadMovieDetails() {
         let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
         let (sut, loader) = makeSUT(movie: movie)
         ViewHosting.host(view: sut)
-        XCTAssertEqual(movie, loader.requestedMovie, "Expected to request load details from movie assigned to View Model")
+        let requestedURL = Endpoint.movieDetails(movieId: movie.id).url
+        XCTAssertEqual([requestedURL], loader.requstedURLs, "Expected to request load details from movie assigned to View Model")
     }
     
     func test_loadingMovieIndicator_isVisibleWhileLoadingMovieDetails() {
@@ -74,14 +75,14 @@ final class MovieDetailsIntegrationTests: XCTestCase {
     func test_failureRetryAction_requestAnotherMovieDetailsLoad() throws {
         let movie = Movie(id: "1", title: "A title", posterImageURL: nil, releaseDate: "A date")
         let (sut, loader) = makeSUT(movie: movie)
-        XCTAssertEqual(loader.requestsCallCount, 0, "Expected to not request movie details until view is visible")
+        XCTAssertEqual(loader.loadCallCount, 0, "Expected to not request movie details until view is visible")
         
         ViewHosting.host(view: sut)
-        XCTAssertEqual(loader.requestsCallCount, 1, "Expected to request movie details when view become visible")
+        XCTAssertEqual(loader.loadCallCount, 1, "Expected to request movie details when view become visible")
         
         loader.completeLoadingWithFailure()
         try sut.simulateRetryAction()
-        XCTAssertEqual(loader.requestsCallCount, 2, "Expected to attemp a new movie details request when tapping failure retry button")
+        XCTAssertEqual(loader.loadCallCount, 2, "Expected to attemp a new movie details request when tapping failure retry button")
     }
     
     // MARK: - Helpers

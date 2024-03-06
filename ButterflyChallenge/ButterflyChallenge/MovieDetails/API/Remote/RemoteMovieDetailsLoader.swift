@@ -1,13 +1,13 @@
 //
-//  RemoteMoviesDataLoader.swift
+//  RemoteMovieDetailsLoader.swift
 //  ButterflyChallenge
 //
-//  Created by Tulio Parreiras on 5/3/2024.
+//  Created by Tulio Parreiras on 6/3/2024.
 //
 
 import Foundation
 
-final class RemoteMoviesDataLoader: MoviesDataLoader {
+final class RemoteMovieDetailsLoader: MovieDetailsLoader {
     private let client: HTTPClient
     
     init(client: HTTPClient) {
@@ -19,7 +19,7 @@ final class RemoteMoviesDataLoader: MoviesDataLoader {
         case invalidData
     }
     
-    func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask {
+    func loadMovieData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask {
         let task = HTTPClientTaskWrapper<LoadResult>(completion)
         task.wrapped = client.get(from: url) { [weak self] result in
             guard self != nil else { return }
@@ -28,8 +28,8 @@ final class RemoteMoviesDataLoader: MoviesDataLoader {
                 .mapError { _ in Error.connectivity }
                 .flatMap { (data: Data, response: HTTPURLResponse) in
                     do {
-                        let movies = try MovieListMapper.map(data, from: response)
-                        return .success(movies)
+                        let movieDetails = try MovieDetailsMapper.map(data, from: response)
+                        return .success(movieDetails)
                     } catch {
                         return .failure(error)
                     }

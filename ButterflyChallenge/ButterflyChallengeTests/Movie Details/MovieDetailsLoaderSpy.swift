@@ -10,22 +10,29 @@ import Foundation
 @testable import ButterflyChallenge
 
 class MovieDetailsLoaderSpy: MovieDetailsLoader {
-    var requestsCallCount = 0
-    var requestedMovie: Movie?
-    private var movieLoadCompletion: ((LoadResult) -> Void)?
     
-    func loadMovieData(from movie: Movie, completion: @escaping (LoadResult) -> Void) {
-        movieLoadCompletion = completion
-        requestedMovie = movie
-        requestsCallCount += 1
+    var moviesDetailsRequests = [(url: URL, completion: (MovieDetailsLoader.LoadResult) -> Void)]()
+    var requstedURLs: [URL] { moviesDetailsRequests.map { $0.url }}
+    var loadCallCount: Int { moviesDetailsRequests.count }
+    
+    private(set) var cancelledMovieDetailsURLs = [URL]()
+    
+    struct TaskSpy: DataLoaderTask {
+        let cancelCallback: () -> Void
+        func cancel() { cancelCallback() }
     }
     
-    func completeLoading(with movieDetails: MovieDetails) {
-        movieLoadCompletion?(.success(movieDetails))
+    func loadMovieData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask {
+        moviesDetailsRequests.append((url, completion))
+        return TaskSpy { [weak self] in self?.cancelledMovieDetailsURLs.append(url) }
     }
     
-    func completeLoadingWithFailure() {
+    func completeLoading(with movieDetails: MovieDetails, at index: Int = 0) {
+        moviesDetailsRequests[index].completion(.success(movieDetails))
+    }
+    
+    func completeLoadingWithFailure(at index: Int = 0) {
         let error = NSError(domain: "", code: 0)
-        movieLoadCompletion?(.failure(error))
+        moviesDetailsRequests[index].completion(.failure(error))
     }
 }

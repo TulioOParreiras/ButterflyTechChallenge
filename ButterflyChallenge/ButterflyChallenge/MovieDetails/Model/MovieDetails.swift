@@ -13,6 +13,6 @@ struct MovieDetails {
     let posterImageURL: URL?
     let releaseDate: String
     let overview: String
-    let originalTitle: String
-    let duration: String
+    let originalTitle: String?
+    let duration: String?
 }

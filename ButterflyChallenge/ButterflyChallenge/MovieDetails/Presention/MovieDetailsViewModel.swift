@@ -15,10 +15,13 @@ enum MovieDetailsViewState {
 }
 
 final class MovieDetailsViewModel: ObservableObject {
+    
+    @Published var viewState: MovieDetailsViewState = .empty
+    
     let movie: Movie
     let movieDetailsLoader: MovieDetailsLoader
     
-    @Published var viewState: MovieDetailsViewState = .empty
+    private var movieLoadTask: DataLoaderTask?
     
     init(movie: Movie, movieDetailsLoader: MovieDetailsLoader) {
         self.movie = movie
@@ -33,15 +36,35 @@ final class MovieDetailsViewModel: ObservableObject {
         loadMovieDetails()
     }
     
+    func onViewDisappear() {
+        cancelCurrentLoadTask()
+    }
+    
+    private func cancelCurrentLoadTask() {
+        movieLoadTask?.cancel()
+    }
+    
     private func loadMovieDetails() {
+        guard
+            let url = Endpoint.movieDetails(movieId: movie.id).url
+        else { return }
         viewState = .loading
-        movieDetailsLoader.loadMovieData(from: movie, completion: { [weak self] result in
-            do {
-                let value = try result.get()
-                self?.viewState = .loaded(value)
-            } catch {
-                self?.viewState = .failure(error)
+        cancelCurrentLoadTask()
+        movieLoadTask = movieDetailsLoader.loadMovieData(from: url, completion: { [weak self] result in
+            guard Thread.isMainThread else {
+                DispatchQueue.main.async { self?.onMovieDetailsLoad(result) }
+                return
             }
+            self?.onMovieDetailsLoad(result)
         })
+    }
+    
+    private func onMovieDetailsLoad(_ result: MovieDetailsLoader.LoadResult) {
+        do {
+            let value = try result.get()
+            viewState = .loaded(value)
+        } catch {
+            viewState = .failure(error)
+        }
     }
 }

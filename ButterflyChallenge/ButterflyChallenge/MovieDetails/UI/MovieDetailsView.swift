@@ -17,17 +17,24 @@ struct MovieDetailsView: View {
     @ObservedObject var viewModel: MovieDetailsViewModel
     
     var body: some View {
-        content
-            .onAppear {
-                viewModel.onViewLoad()
-            }
+        VStack {
+            content
+        }
+        .onAppear {
+            viewModel.onViewLoad()
+        }
+        .onDisappear {
+            viewModel.onViewDisappear()
+        }
     }
     
     @ViewBuilder
     var content: some View {
         switch viewModel.viewState {
         case .loading:
-            ProgressView().accessibilityIdentifier(ViewIdentifiers.loading.rawValue)
+            ProgressView()
+                .controlSize(.large)
+                .accessibilityIdentifier(ViewIdentifiers.loading.rawValue)
         case .loaded(let movie):
             MovieDetailsContentView(
                 viewModel: MovieDetailsContentViewModel(
@@ -48,5 +55,13 @@ struct MovieDetailsView: View {
 }
 
 #Preview {
-    MovieDetailsView(viewModel: MovieDetailsViewModel(movie: .mock, movieDetailsLoader: MovieDetailsLoaderMock()))
+    MovieDetailsView(viewModel: MovieDetailsViewModel(movie: .mock, movieDetailsLoader: MovieDetailsLoaderMock(result: .success(.duneMovie))))
+}
+
+#Preview {
+    MovieDetailsView(viewModel: MovieDetailsViewModel(movie: .mock, movieDetailsLoader: MovieDetailsLoaderMock(result: .failure(NSError(domain: "", code: 0)))))
+}
+
+#Preview {
+    MovieDetailsView(viewModel: MovieDetailsViewModel(movie: .mock, movieDetailsLoader: MovieDetailsLoaderMock(result: nil)))
 }

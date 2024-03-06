@@ -21,7 +21,7 @@ final class MovieDetailsContentViewModel: ObservableObject {
     let movieDetails: MovieDetails
     let imageLoader: MovieImageDataLoader
     
-    private var imageTask: DataLoaderTask?
+    private var imageLoadTask: DataLoaderTask?
     
     init(movieDetails: MovieDetails, imageLoader: MovieImageDataLoader) {
         self.movieDetails = movieDetails
@@ -29,20 +29,32 @@ final class MovieDetailsContentViewModel: ObservableObject {
     }
     
     func onViewLoad() {
+        loadMovieImage()
+    }
+    
+    func onImageLoadRetry() {
+        onViewLoad()
+    }
+    
+    func onViewDisappear() {
+        cancelCurrentLoadTask()
+    }
+    
+    private func cancelCurrentLoadTask() {
+        imageLoadTask?.cancel()
+    }
+    
+    private func loadMovieImage() {
         guard let url = movieDetails.posterImageURL else { return }
-        imageTask?.cancel()
+        cancelCurrentLoadTask()
         imageState = .loading
-        imageTask = imageLoader.loadImageData(from: url, completion: { [weak self] result in
+        imageLoadTask = imageLoader.loadImageData(from: url, completion: { [weak self] result in
             guard Thread.isMainThread else {
                 DispatchQueue.main.async { self?.onImageLoad(with: result) }
                 return
             }
             self?.onImageLoad(with: result)
         })
-    }
-    
-    func onImageLoadRetry() {
-        onViewLoad()
     }
     
     private func onImageLoad(with result: MovieImageDataLoader.LoadResult) {

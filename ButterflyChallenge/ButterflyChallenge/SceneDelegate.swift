@@ -8,13 +8,11 @@
 import UIKit
 import SwiftUI
 
-class MovieLoader: MovieDetailsLoader {
-    func loadMovieData(from movie: Movie, completion: @escaping (LoadResult) -> Void) {
-        
-    }
-}
-
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    
+    lazy var httpClient: HTTPClient = {
+        URLSessionHTTPClient(session: .shared)
+    }()
 
     var window: UIWindow?
 
@@ -27,14 +25,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     private func makeRootViewController() -> UIViewController {
         let navigationController = UINavigationController()
-        let client = URLSessionHTTPClient(session: .shared)
-        let moviesLoader = RemoteMoviesDataLoader(client: client)
-        let imageDataLoader = RemoteMovieImageDataLoader(client: client)
+        let moviesLoader = RemoteMoviesDataLoader(client: httpClient)
+        let imageDataLoader = RemoteMovieImageDataLoader(client: httpClient)
         navigationController.viewControllers = [MoviesListUIComposer.moviesListComposedWith(
             moviesLoader: moviesLoader,
             imagesLoader: imageDataLoader
-        ) { [weak navigationController] movie in
-            let movieLoader = MovieLoader()
+        ) { [weak navigationController, weak self] movie in
+            guard let self else { return }
+            let movieLoader = RemoteMovieDetailsLoader(client: self.httpClient)
             let view = MovieDetailsView(viewModel: MovieDetailsViewModel(movie: movie, movieDetailsLoader: movieLoader))
             let hostingController = UIHostingController(rootView: view)
             navigationController?.pushViewController(hostingController, animated: true)
