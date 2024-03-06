@@ -6,8 +6,13 @@
 //
 
 import UIKit
+import SwiftUI
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    
+    lazy var httpClient: HTTPClient = {
+        URLSessionHTTPClient(session: .shared)
+    }()
 
     var window: UIWindow?
 
@@ -19,14 +24,29 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func makeRootViewController() -> UIViewController {
-        let client = URLSessionHTTPClient(session: .shared)
-        let moviesLoader = RemoteMoviesDataLoader(client: client)
-        let imageDataLoader = RemoteMovieImageDataLoader(client: client)
-        let controller = MoviesListUIComposer.moviesListComposedWith(
+        let navigationController = UINavigationController()
+        let moviesLoader = RemoteMoviesDataLoader(client: httpClient)
+        let imageDataLoader = RemoteMovieImageDataLoader(client: httpClient)
+        let moviesListController = MoviesListUIComposer.moviesListComposedWith(
             moviesLoader: moviesLoader,
             imagesLoader: imageDataLoader
+        ) { [weak navigationController, weak self] movie in
+            self?.onMovieSelection(movie, navigationController: navigationController)
+        }
+        navigationController.viewControllers = [moviesListController]
+        return navigationController
+    }
+    
+    private func onMovieSelection(_ movie: Movie, navigationController: UINavigationController?) {
+        let movieDetailsLoader = RemoteMovieDetailsLoader(client: httpClient)
+        let imageDataLoader = RemoteMovieImageDataLoader(client: httpClient)
+        let view = MovieDetailsUIComposer.movieDetailsComposedWith(
+            movie: movie,
+            movieDetailsLoader: movieDetailsLoader,
+            imageLoader: imageDataLoader
         )
-        return UINavigationController(rootViewController: controller)
+        let hostingController = UIHostingController(rootView: view)
+        navigationController?.pushViewController(hostingController, animated: true)
     }
     
 }

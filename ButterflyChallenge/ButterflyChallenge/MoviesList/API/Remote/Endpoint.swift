@@ -22,14 +22,25 @@ extension Endpoint {
         page: String
     ) -> Endpoint {
         return Endpoint(
-            path: "/3/search/movie",
+            path: "search/movie",
             queryItems: [
+                apiKeyQueryItem,
                 URLQueryItem(name: "query", value: query),
                 URLQueryItem(name: "page", value: page),
-                URLQueryItem(name: "language", value: "en-US"),
-                URLQueryItem(name: "api_key", value: "bc7ad8316e724104902012f2f86bc86a")
+                URLQueryItem(name: "language", value: "en-US")
             ]
         )
+    }
+    
+    static func movieDetails(movieId id: String) -> Endpoint {
+        return Endpoint(
+            path: "movie/\(id)",
+            queryItems: [apiKeyQueryItem]
+        )
+    }
+    
+    private static var apiKeyQueryItem: URLQueryItem {
+        URLQueryItem(name: "api_key", value: "bc7ad8316e724104902012f2f86bc86a")
     }
 }
 
@@ -40,7 +51,7 @@ extension Endpoint {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "api.themoviedb.org"
-        components.path = path
+        components.path = "/3/".appending(path)
         components.queryItems = queryItems
 
         return components.url

@@ -9,59 +9,6 @@ import XCTest
 
 @testable import ButterflyChallenge
 
-class LoaderSpy: MoviesDataLoader, MovieImageDataLoader {
-    
-    private struct TaskSpy: DataLoaderTask {
-        let cancelCallback: () -> Void
-        func cancel() { cancelCallback() }
-    }
-    
-    // MARK: - MoviesDataLoader
-    
-    var moviesListRequests = [(url: URL, completion: (MoviesDataLoader.LoadResult) -> Void)]()
-    var loadCallCount: Int { moviesListRequests.count }
-    
-    private(set) var cancelledMoviesListURLs = [URL]()
-    
-    func loadMoviesData(from url: URL, completion: @escaping (MoviesDataLoader.LoadResult) -> Void) -> DataLoaderTask {
-        moviesListRequests.append((url, completion))
-        return TaskSpy { [weak self] in self?.cancelledMoviesListURLs.append(url) }
-    }
-    
-    func completeMoviesListLoading(with movies: [Movie] = [], at index: Int = 0) {
-        moviesListRequests[index].completion(.success(movies))
-    }
-    
-    func completeMoviesListLoadingWithError(at index: Int = 0) {
-        let error = NSError(domain: "an error", code: 0)
-        moviesListRequests[index].completion(.failure(error))
-    }
-    
-    // MARK: - MovieImageDataLoader
-    
-    private var imageRequests = [(url: URL, completion: (MovieImageDataLoader.LoadResult) -> Void)]()
-    
-    var loadedImageURLs: [URL] {
-        return imageRequests.map { $0.url }
-    }
-    
-    private(set) var cancelledImageURLs = [URL]()
-    
-    func loadImageData(from url: URL, completion: @escaping (MovieImageDataLoader.LoadResult) -> Void) -> DataLoaderTask {
-        imageRequests.append((url, completion))
-        return TaskSpy { [weak self] in self?.cancelledImageURLs.append(url) }
-    }
-    
-    func completeImageLoading(with imageData: Data = Data(), at index: Int = 0) {
-        imageRequests[index].completion(.success(imageData))
-    }
-    
-    func completeImageLoadingWithError(at index: Int = 0) {
-        let error = NSError(domain: "an error", code: 0)
-        imageRequests[index].completion(.failure(error))
-    }
-}
-
 final class MoviesListIntegrationTests: XCTestCase { 
     
     func test_loadMoviesActions_requestLoadMovies() {
@@ -103,7 +50,7 @@ final class MoviesListIntegrationTests: XCTestCase {
     func test_loadingMoviesIndicator_isVisibleWhileLoadingMoviesList() {
         let (sut, loader) = makeSUT()
         
-        sut.simulateAppearence()
+        sut.loadViewIfNeeded()
         assertThatSUTIsNotRenderingShimmeringCells(sut)
         
         sut.simulateSearchForText("A movie")
@@ -366,6 +313,41 @@ final class MoviesListIntegrationTests: XCTestCase {
         XCTAssertNil(view?.renderedPosterImage, "Expected no rendered image when an image load finishes after the view is not visible anymore")
     }
     
+    func test_movieCellSelection_triggerAction() {
+        var selectedMovie: Movie?
+        let (sut, loader) = makeSUT { selectedMovie = $0 }
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        let movie0 = makeMovie(posterImageURL: URL(string: "http://url-0.com")!)
+        let movie1 = makeMovie(posterImageURL: URL(string: "http://url-1.com")!)
+        loader.completeMoviesListLoading(with: [movie0, movie1])
+        
+        sut.simulateCellSelection(at: 0)
+        XCTAssertEqual(selectedMovie, movie0, "Expected selected movie to be \(movie0) when selecting row 0, got \(String(describing: selectedMovie)) instead")
+        
+        sut.simulateCellSelection(at: 1)
+        XCTAssertEqual(selectedMovie, movie1, "Expected selected movie to be \(movie1) when selecting row 1, got \(String(describing: selectedMovie)) instead")
+    }
+    
+    func test_loadingCellSelection_doesNotTriggerAction() {
+        var selectedMovie: Movie?
+        let (sut, _) = makeSUT { selectedMovie = $0 }
+        
+        sut.loadViewIfNeeded()
+        sut.simulateSearchForText("A")
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when not tapping any cell")
+        
+        sut.simulateCellSelection(at: 0)
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when tapping first shimmering cell")
+        
+        sut.simulateCellSelection(at: 1)
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when tapping second shimmering cell")
+        
+        sut.simulateCellSelection(at: 2)
+        XCTAssertNil(selectedMovie, "Expected selected movie to be nil when tapping third shimmering cell")
+    }
+    
     func test_loadMoviesCompletion_dispatchesFromBackgroundToMainThread() {
         let (sut, loader) = makeSUT()
         sut.loadViewIfNeeded()
@@ -396,75 +378,20 @@ final class MoviesListIntegrationTests: XCTestCase {
     
     // MARK: - Helpers
     
-    func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: MoviesListViewController, loader: LoaderSpy) {
-        let loader = LoaderSpy()
-        let sut = MoviesListUIComposer.moviesListComposedWith(moviesLoader: loader, imagesLoader: loader)
+    func makeSUT(
+        onMovieSelection: @escaping (Movie) -> Void = { _ in },
+        file: StaticString = #file,
+        line: UInt = #line
+    ) -> (sut: MoviesListViewController, loader: MoviesListLoaderSpy) {
+        let loader = MoviesListLoaderSpy()
+        let sut = MoviesListUIComposer.moviesListComposedWith(
+            moviesLoader: loader,
+            imagesLoader: loader,
+            onMovieSelection: onMovieSelection
+        )
         trackForMemoryLeaks(loader, file: file, line: line)
         trackForMemoryLeaks(sut, file: file, line: line)
         return (sut, loader)
-    }
-    
-    private func assertThat(
-        _ sut: MoviesListViewController,
-        isRendering moviesList: [Movie],
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        sut.view.enforceLayoutCycle()
-        
-        guard sut.numberOfRenderedCells() == moviesList.count else {
-            return XCTFail("Expected \(moviesList.count) movies, got \(sut.numberOfRenderedCells()) instead.", file: file, line: line)
-        }
-        
-        moviesList.enumerated().forEach { index, movie in
-            assertThat(sut, hasViewConfiguredFor: movie, at: index, file: file, line: line)
-        }
-    }
-    
-    func assertThat(_ sut: MoviesListViewController, hasViewConfiguredFor movie: Movie, at index: Int, file: StaticString = #file, line: UInt = #line) {
-        let view = sut.cell(at: index)
-        
-        guard let cell = view as? MovieViewCell else {
-            return XCTFail("Expected \(MovieViewCell.self) instance, got \(String(describing: view)) instead", file: file, line: line)
-        }
-        
-        XCTAssertEqual(cell.titleText, movie.title, "Expected movie title to be \(String(describing: movie.title)) for movie cell at index (\(index))", file: file, line: line)
-        
-        XCTAssertEqual(cell.releaseDateText, movie.releaseDate, "Expected release date text to be \(String(describing: movie.releaseDate)) for movie cell at index (\(index)", file: file, line: line)
-    }
-    
-    func assertThatSUTIsRenderingShimmeringCells(_ sut: MoviesListViewController, file: StaticString = #file, line: UInt = #line) {
-        sut.view.enforceLayoutCycle()
-     
-        guard sut.numberOfRenderedCells() == sut.numberOfShimmeringCells else {
-            return XCTFail("Expected \(sut.numberOfShimmeringCells) shimmering cells, got \(sut.numberOfRenderedCells()) instead.", file: file, line: line)
-        }
-        
-        (0 ..< sut.numberOfShimmeringCells).forEach { index in
-            let view = sut.cell(at: index)
-            guard let cell = view as? MovieShimmeringCell else {
-                return XCTFail("Expected \(String(describing: MovieShimmeringCell.self)) at \(index), got \(String(describing: view)) instead", file: file, line: line)
-            }
-            XCTAssertTrue(cell.isShimmeringImage, "Expected to have image container shimmering", file: file, line: line)
-            XCTAssertTrue(cell.isShimmeringTitle, "Expected to have title container shimmering", file: file, line: line)
-            XCTAssertTrue(cell.isShimmeringDate, "Expected to have date container shimmering", file: file, line: line)
-        }
-    }
-    
-    func assertThatSUTIsNotRenderingShimmeringCells(_ sut: MoviesListViewController, file: StaticString = #file, line: UInt = #line) {
-        sut.view.enforceLayoutCycle()
-        
-        guard sut.numberOfRenderedCells() == 0 else {
-            return XCTFail("Expected to have no rendered cell, got \(sut.numberOfRenderedCells()) instead", file: file, line: line)
-        }
-    }
-    
-    private func makeMovie(
-        title: String = "A title",
-        posterImageURL: URL = URL(string: "https://any-url.com")!,
-        releaseDate: String = "Today"
-    ) -> Movie {
-        Movie(id: UUID().uuidString, title: title, posterImageURL: posterImageURL, releaseDate: releaseDate)
     }
     
 }

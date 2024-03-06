@@ -15,7 +15,6 @@ final class RemoteMovieImageDataLoader: MovieImageDataLoader {
     }
     
     enum Error: Swift.Error {
-        case connectivity
         case invalidData
     }
     
@@ -49,12 +48,19 @@ final class RemoteMovieImageDataLoader: MovieImageDataLoader {
             guard self != nil else { return }
             
             task.complete(with: result
-                .mapError { _ in Error.connectivity }
                 .flatMap { (data, response) in
                     let isValidResponse = response.isOK && !data.isEmpty
                     return isValidResponse ? .success(data) : .failure(Error.invalidData)
                 })
         }
         return task
+    }
+}
+
+extension HTTPURLResponse {
+    private static var OK_200: Int { return 200 }
+
+    var isOK: Bool {
+        return statusCode == HTTPURLResponse.OK_200
     }
 }

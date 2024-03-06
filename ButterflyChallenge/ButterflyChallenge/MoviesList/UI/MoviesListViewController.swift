@@ -9,6 +9,10 @@ import UIKit
 
 final class MoviesListViewController: UITableViewController {
     
+    enum Constants {
+        static let shimmeringCellsCount = 3
+    }
+    
     lazy var searchBar = UISearchBar()
     
     @IBOutlet private(set) weak var errorView: ErrorView?
@@ -35,6 +39,7 @@ final class MoviesListViewController: UITableViewController {
             }
         }
     }
+    var onMovieSelection: ((Movie) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -90,7 +95,7 @@ extension MoviesListViewController: UISearchBarDelegate {
 extension MoviesListViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        isLoading ? 3 : tableModel.count
+        isLoading ? Constants.shimmeringCellsCount : tableModel.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -106,6 +111,14 @@ extension MoviesListViewController {
 // MARK: - UITableViewDelegate
 
 extension MoviesListViewController {
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard 
+            isLoading == false,
+            indexPath.row < tableModel.count
+        else { return }
+        onMovieSelection?(tableModel[indexPath.row].model)
+    }
     
     override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cancelImageLoad(forRowAt: indexPath)

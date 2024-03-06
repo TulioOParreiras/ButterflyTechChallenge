@@ -1,0 +1,46 @@
+{
+  "configurations" : [
+    {
+      "id" : "0CE8CB7C-BE3E-4DA0-B47B-5FE0A50676BB",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:ButterflyChallenge.xcodeproj",
+          "identifier" : "D2212E3E2B916839002F9A96",
+          "name" : "ButterflyChallenge"
+        }
+      ]
+    },
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:ButterflyChallenge.xcodeproj",
+      "identifier" : "D2212E3E2B916839002F9A96",
+      "name" : "ButterflyChallenge"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:ButterflyChallenge.xcodeproj",
+        "identifier" : "D2212E542B91683A002F9A96",
+        "name" : "ButterflyChallengeTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:ButterflyChallenge.xcodeproj",
+        "identifier" : "D2212E5E2B91683A002F9A96",
+        "name" : "ButterflyChallengeUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
