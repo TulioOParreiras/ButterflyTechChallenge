@@ -45,8 +45,8 @@ final class MovieDetailsContentIntegrationTests: XCTestCase {
     
     // MARK: - Helpers
     
-    func makeSUT(movieDetails: MovieDetails = .mock) -> (sut: MovieDetailsContentView, loader: MoviesListLoaderSpy) {
-        let imageLoader = MoviesListLoaderSpy()
+    func makeSUT(movieDetails: MovieDetails = .mock) -> (sut: MovieDetailsContentView, loader: MovieDetailsLoaderSpy) {
+        let imageLoader = MovieDetailsLoaderSpy()
         let viewModel = MovieDetailsContentViewModel(movieDetails: movieDetails, imageLoader: imageLoader)
         let sut = MovieDetailsContentView(viewModel: viewModel)
         return (sut, imageLoader)

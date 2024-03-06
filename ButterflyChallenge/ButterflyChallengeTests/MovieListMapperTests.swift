@@ -37,7 +37,6 @@ final class MovieListMapperTests: XCTestCase {
     }
     
     func test_mapMovie_withMissingPoster() throws {
-        let posterPath = "an_image_path"
         let expectedMovies = [
             Movie(
                 id: "1",
