@@ -1,5 +1,41 @@
 # Butterfly Technical Challenge
 
+## Developer Notes
+
+### Running Instructions
+No specific action is required to run the project.
+- The dependencies are managed via Swift Package Manager, which will install them upon project opening;
+- To check code coverage, run all tests (cmmd + U) on the main target (ButterflyChallenge);
+
+### About the Project
+- This project was built following the IMBD app as a reference, a simpler and similar UI was built following it;
+- The two screens (MoviesList and MovieDetails) are split by folders, but if necessary they could be moved into separate targets, by extracting what is common between them;
+- Modular: the project was built keeping on mind the modules decoupling, and using POP to make it easier to inject/modify behavior, while empowering tests;
+- URL Requests caching: done by using the default cache behavior from the shared URLSession (useProtocolCachePolicy), where is uses the caching logic defined by the protocol implementation (HTTP and HTTPS caching are built in the protocol so the server is able to determine when the client should cache and when it expire);
+
+#### Movies List
+- Developed using Storyboard for the UI;
+- UI Architecure used is MVVM, using power of closures to bind the view and the viewmodel;
+- A MVC pattern is used for managing the cells lifecycle;
+
+#### Movie Details
+- Developed using SwiftUI;
+- UI Architecture used is MVVM, using power of observable objects to bind the view and viewmodel; 
+
+#### Tests
+The test strategy adopted was to focus more on Integration Tests, which cover most of the desirable behaviors and interaction between the multiple objects. 
+This way its possible to test how the components involved in rendering screens interact with each other, by mocking url requests responses to mimic real life behavior, with Protocols making sure the signature expected is respected.
+For testing the Movies List, the library ViewInspector was used to be able to access the views properties, since Apple still does not provide support.
+
+### Whats Next?
+This is a small project that has unlimited potential for building new features, like the following that could be built:
+- Movies List Pagination: to build this one we could extract the MovieCellController signature into a protocol, and create a new concrete type which would render the loading cell at the bottom of the view, and let the view model decide when this cell controller should be inserted in the tablemodels, in the last position.
+- Favorites List: could be done by creating a new object to conform with the protocol MoviesDataLoader, but which would load from a local persistence, and also create a new protocol to define the storing mechanism signature, while having the concrete type defined and injected in the new Favorites screen. The Movies List screen would be responsible for inserting/removing movies in the local storage and the Favorites screen would be reading those values and possibly editing them too.
+- Offline mode: create a new protocol, or use the same for Favorites List, to store and retrieve the movies list. Create them a new object responsbile for deciding when to load/save movies locally and when to load from server, inject this new object in the Movies List screen via property moviesLoader on MoviesListViewModel.
+- Localization: make all texts localizable and add tests to make sure all texts are localized in all supported languages.
+- Improve UI/UX by adding a more complex, friendly and interactive UI.
+- Enable certificate pinning and remove sensitve hard-coded data from project (api key and services url).
+
 ## Assignment Description
 
 You have been tasked with creating a simple iOS app that allows users to search for movies and view their details. The app should make use of the Movie Database API (https://www.themoviedb.org/documentation/api) to retrieve movie information.
