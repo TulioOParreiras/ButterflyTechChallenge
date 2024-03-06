@@ -68,6 +68,7 @@
 		D2212E642B91683A002F9A96 /* ButterflyChallengeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E632B91683A002F9A96 /* ButterflyChallengeUITests.swift */; };
 		D2212E742B916DBA002F9A96 /* XCTestCase+TestExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2212E732B916DBA002F9A96 /* XCTestCase+TestExtensions.swift */; };
 		D2212E762B9597B0002F9A96 /* MoviesList.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2212E752B9597B0002F9A96 /* MoviesList.storyboard */; };
+		D2921B832B982BA200148ADB /* MovieDetailsUIComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2921B822B982BA200148ADB /* MovieDetailsUIComposer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -153,6 +154,7 @@
 		D2212E632B91683A002F9A96 /* ButterflyChallengeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButterflyChallengeUITests.swift; sourceTree = "<group>"; };
 		D2212E732B916DBA002F9A96 /* XCTestCase+TestExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+TestExtensions.swift"; sourceTree = "<group>"; };
 		D2212E752B9597B0002F9A96 /* MoviesList.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MoviesList.storyboard; sourceTree = "<group>"; };
+		D2921B822B982BA200148ADB /* MovieDetailsUIComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsUIComposer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -264,6 +266,7 @@
 				D21225322B97CB7F00C7CDBF /* Model */,
 				D212252C2B97CB5000C7CDBF /* Presention */,
 				D21225272B97CB2500C7CDBF /* UI */,
+				D2921B822B982BA200148ADB /* MovieDetailsUIComposer.swift */,
 			);
 			path = MovieDetails;
 			sourceTree = "<group>";
@@ -582,6 +585,7 @@
 				D20DDCE12B96AF010070015C /* MovieShimmeringCell.swift in Sources */,
 				D20DDCBC2B96A7120070015C /* WeakRefVirtualProxy.swift in Sources */,
 				D212253F2B97F20800C7CDBF /* ImageURLBuilder.swift in Sources */,
+				D2921B832B982BA200148ADB /* MovieDetailsUIComposer.swift in Sources */,
 				D21225312B97CB7300C7CDBF /* MovieDetailsLoader.swift in Sources */,
 				D21225412B97F32900C7CDBF /* DurationFormatter.swift in Sources */,
 				D21225362B97CB9E00C7CDBF /* MovieDetailsView+PreviewHelpers.swift in Sources */,

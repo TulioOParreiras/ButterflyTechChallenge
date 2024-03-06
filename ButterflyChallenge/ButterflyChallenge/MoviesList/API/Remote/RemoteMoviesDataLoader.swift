@@ -14,18 +14,12 @@ final class RemoteMoviesDataLoader: MoviesDataLoader {
         self.client = client
     }
     
-    enum Error: Swift.Error {
-        case connectivity
-        case invalidData
-    }
-    
     func loadMoviesData(from url: URL, completion: @escaping (LoadResult) -> Void) -> DataLoaderTask {
         let task = HTTPClientTaskWrapper<LoadResult>(completion)
         task.wrapped = client.get(from: url) { [weak self] result in
             guard self != nil else { return }
             
             task.complete(with: result
-                .mapError { _ in Error.connectivity }
                 .flatMap { (data: Data, response: HTTPURLResponse) in
                     do {
                         let movies = try MovieListMapper.map(data, from: response)

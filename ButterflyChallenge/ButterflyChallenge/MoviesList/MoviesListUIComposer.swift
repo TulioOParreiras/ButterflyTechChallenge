@@ -8,6 +8,8 @@
 import UIKit
 
 final class MoviesListUIComposer {
+    private init() { }
+    
     static func moviesListComposedWith(
         moviesLoader: MoviesDataLoader,
         imagesLoader: MovieImageDataLoader,

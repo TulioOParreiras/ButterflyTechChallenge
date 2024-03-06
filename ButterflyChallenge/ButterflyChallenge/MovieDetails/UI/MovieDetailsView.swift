@@ -15,6 +15,7 @@ struct MovieDetailsView: View {
     }
     
     @ObservedObject var viewModel: MovieDetailsViewModel
+    let imageLoader: MovieImageDataLoader
     
     var body: some View {
         VStack {
@@ -39,9 +40,7 @@ struct MovieDetailsView: View {
             MovieDetailsContentView(
                 viewModel: MovieDetailsContentViewModel(
                     movieDetails: movie,
-                    imageLoader: RemoteMovieImageDataLoader(
-                        client: URLSessionHTTPClient(session: .shared)
-                    )
+                    imageLoader: imageLoader
                 )
             ).accessibilityIdentifier(ViewIdentifiers.movieDetails.rawValue)
         case .failure:
@@ -55,13 +54,35 @@ struct MovieDetailsView: View {
 }
 
 #Preview {
-    MovieDetailsView(viewModel: MovieDetailsViewModel(movie: .mock, movieDetailsLoader: MovieDetailsLoaderMock(result: .success(.duneMovie))))
+    MovieDetailsView(
+        viewModel: MovieDetailsViewModel(
+            movie: .mock,
+            movieDetailsLoader: MovieDetailsLoaderMock(
+                result: .success(.duneMovie))
+        ),
+        imageLoader: ImageLoaderMock(
+            loadResult: .success(UIImage(systemName: "photo.fill")!.pngData()!)
+        )
+    )
 }
 
 #Preview {
-    MovieDetailsView(viewModel: MovieDetailsViewModel(movie: .mock, movieDetailsLoader: MovieDetailsLoaderMock(result: .failure(NSError(domain: "", code: 0)))))
+    MovieDetailsView(
+        viewModel: MovieDetailsViewModel(
+            movie: .mock,
+            movieDetailsLoader: MovieDetailsLoaderMock(
+                result: .failure(NSError(domain: "", code: 0)))
+        ),
+        imageLoader: ImageLoaderMock(
+            loadResult: .failure(NSError(domain: "", code: 0)))
+    )
 }
 
 #Preview {
-    MovieDetailsView(viewModel: MovieDetailsViewModel(movie: .mock, movieDetailsLoader: MovieDetailsLoaderMock(result: nil)))
+    MovieDetailsView(
+        viewModel: MovieDetailsViewModel(
+            movie: .mock,
+            movieDetailsLoader: MovieDetailsLoaderMock(result: nil)),
+        imageLoader: ImageLoaderMock(loadResult: nil)
+    )
 }

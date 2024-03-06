@@ -20,6 +20,8 @@ struct MovieDetailsContentView: View {
         static let titleStackSpacing = CGFloat(4)
         static let durationStackPadding = CGFloat(8)
         static let overviewStackPadding = CGFloat(8)
+        static let imageWidth = CGFloat(100)
+        static let imageHeight = CGFloat(150)
     }
     
     @ObservedObject var viewModel: MovieDetailsContentViewModel
@@ -92,7 +94,7 @@ struct MovieDetailsContentView: View {
         ZStack {
             Color.secondary
                 .opacity(0.5)
-                .frame(width: 100, height: 150)
+                .frame(width: Constants.imageWidth, height: Constants.imageHeight)
             imageContent
         }
     }
@@ -104,7 +106,7 @@ struct MovieDetailsContentView: View {
             ProgressView()
                 .accessibilityIdentifier(ViewIdentifiers.loadingIndicator.rawValue)
         case .loaded(let data):
-            buildImage(from: data)
+            makeImage(from: data)
                 .accessibilityIdentifier(ViewIdentifiers.posterImage.rawValue)
         case .failure:
             Button(action: {
@@ -120,7 +122,7 @@ struct MovieDetailsContentView: View {
     }
     
     @ViewBuilder
-    private func buildImage(from data: Data) -> some View {
+    private func makeImage(from data: Data) -> some View {
         if let image = UIImage(data: data) {
             Image(uiImage: image)
         } else {

@@ -27,17 +27,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let navigationController = UINavigationController()
         let moviesLoader = RemoteMoviesDataLoader(client: httpClient)
         let imageDataLoader = RemoteMovieImageDataLoader(client: httpClient)
-        navigationController.viewControllers = [MoviesListUIComposer.moviesListComposedWith(
+        let moviesListController = MoviesListUIComposer.moviesListComposedWith(
             moviesLoader: moviesLoader,
             imagesLoader: imageDataLoader
         ) { [weak navigationController, weak self] movie in
-            guard let self else { return }
-            let movieLoader = RemoteMovieDetailsLoader(client: self.httpClient)
-            let view = MovieDetailsView(viewModel: MovieDetailsViewModel(movie: movie, movieDetailsLoader: movieLoader))
-            let hostingController = UIHostingController(rootView: view)
-            navigationController?.pushViewController(hostingController, animated: true)
-        }]
+            self?.onMovieSelection(movie, navigationController: navigationController)
+        }
+        navigationController.viewControllers = [moviesListController]
         return navigationController
+    }
+    
+    private func onMovieSelection(_ movie: Movie, navigationController: UINavigationController?) {
+        let movieDetailsLoader = RemoteMovieDetailsLoader(client: httpClient)
+        let imageDataLoader = RemoteMovieImageDataLoader(client: httpClient)
+        let view = MovieDetailsUIComposer.movieDetailsComposedWith(
+            movie: movie,
+            movieDetailsLoader: movieDetailsLoader,
+            imageLoader: imageDataLoader
+        )
+        let hostingController = UIHostingController(rootView: view)
+        navigationController?.pushViewController(hostingController, animated: true)
     }
     
 }
